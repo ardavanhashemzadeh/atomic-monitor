@@ -1,0 +1,213 @@
+/* fonts */
+@import url('https://fonts.googleapis.com/css?family=Roboto:300,400');
+
+
+/* general */
+body {
+	margin: 0;
+	padding: 0;
+	background-color: #212121
+}
+div#body {
+	margin-left: 60px;
+}
+.disabled {
+	background-color: #616161;
+}
+.tofix {
+	background-color: #0288D1;
+}
+.good {
+	background-color: #4CAF50;
+}
+.warn {
+	background-color: #F57C00;
+}
+.bad {
+	background-color: #E53935;
+}
+.text-disabled {
+	color: #616161;
+}
+.text-good {
+	color: #4CAF50;
+}
+.text-warn {
+	color: #F57C00;
+}
+.text-bad {
+	color: #E53935;
+}
+
+
+/* nav */
+nav {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 60px;
+	background-color: #131313;
+	z-index: 1;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+nav img {
+	width: 30px;
+	height: 30px;
+	padding: 15px;
+}
+nav ul {
+	margin: 15px 0 0 0;
+	padding: 0;
+	list-style: none;
+}
+nav ul li {
+	width: 60px;
+	height: 65px;
+	margin-bottom: 15px;
+}
+nav ul li a {
+	display: block;
+	text-decoration: none;
+	width: 60px;
+	height: 35px;
+	text-align: center;
+	line-height: 35px;
+	font-size: 1.7em;
+	color: #fff;
+}
+nav ul li h6 {
+	margin: 0;
+	height: 65px;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.75em;
+	text-align: center;
+}
+
+/* status */
+div#body section#status {
+	padding: 20px;
+	text-align: left;
+}
+div#body section#status div.status-box {
+	display: inline-block;
+	width: 250px;
+	height: 100px;
+	margin: 0 20px 0 0;
+	position: relative;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+div#body section#status div.status-box h2 {
+	margin: 0;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	padding: 12px 0 0 15px;
+	font-size: 2em;
+}
+div#body section#status div.status-box h4 {
+	margin: 0;
+	height: 10px;
+	line-height: 10px;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.9em;
+	padding: 0 0 0 15px;
+}
+div#body section#status div.status-box h5 {
+	margin: 0;
+	height: 10px;
+	line-height: 10px;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.75em;
+	padding: 7px 0 7px 7px;
+	background-color: rgba(0,0,0,0.3);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+
+/* servers */
+div#body section#servers {
+	padding: 20px;
+	text-align: center;
+}
+div#body section#servers div.server-box {
+	display: inline-block;
+	vertical-align: top;
+	width: 300px;
+	height: 135px;
+	margin: 5px;
+	background-color: #424242;
+	color: #fff;
+	text-align: left;
+	position: relative;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+div#body section#servers div.server-box div.bar {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	width: 8px;
+}
+div#body section#servers div.server-box h2 {
+	margin: 0;
+	padding: 6px 0 0 15px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 1.45em;
+}
+div#body section#servers div.server-box h2 span {
+	padding-right: 8px;
+	position: relative;
+	top: 1px;
+}
+div#body section#servers div.server-box h3 {
+	margin: 0;
+	padding: 0 0 15px 20px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.8em;
+	opacity: 0.8;
+}
+div#body section#servers div.server-box div.first-row {
+	text-align: center;
+}
+div#body section#servers div.server-box div.first-row div {
+	display: inline-block;
+	margin: 0 8px;
+	position: relative;
+}
+div#body section#servers div.server-box div.first-row div span {
+	position: absolute;
+	bottom: -3px;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.7em;
+}
+div#body section#servers div.server-box div.ping {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 1em;
+}
+
+
+
+

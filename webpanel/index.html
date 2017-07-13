@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset='utf-8'>
+        <meta name='author' content='Atomicbeast101 @ github.com/atomicbeast101'>
+        <meta name='description' content='Atomic Monitor System'>
+        <meta name='viewport' content='width=device-width' />
+        <link rel='shortcut icon' href='favicon.ico' type='image/x-icon' />
+		<link type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet'>
+        <link type='text/css' href='assets/css/main.css' rel='stylesheet'>
+        <title>Atomic Monitor System</title>
+    </head>
+    <body>
+		<nav>
+			<img src='assets/img/logo.png' title='Atomic Monitor System' />
+			<ul>
+				<li>
+					<a href='#'><i class="fa fa-home" aria-hidden="true"></i></a>
+					<h6>Home</h6>
+				</li>
+				<li>
+					<a href='#'><i class="fa fa-bell" aria-hidden="true"></i></a>
+					<h6>Alerts</h6>
+				</li>
+				<li>
+					<a href='#'><i class="fa fa-user" aria-hidden="true"></i></a>
+					<h6>Admin</h6>
+				</li>
+			</ul>
+		</nav>
+		<div id='body'>
+			<section id='status'>
+				<div class='status-box bad'>
+					<h2>1</h2>
+					<h4>Down servers</h4>
+					<h5>Servers Total: 15</h5>
+				</div>
+				<div class='status-box warn'>
+					<h2>3</h2>
+					<h4>Servers with warnings</h4>
+					<h5>Servers Total: 15</h5>
+				</div>
+				<div class='status-box good'>
+					<h2>10</h2>
+					<h4>Up servers</h4>
+					<h5>Servers Total: 15</h5>
+				</div>
+				<div class='status-box disabled'>
+					<h2>1</h2>
+					<h4>Servers disabled</h4>
+					<h5>Servers Total: 15</h5>
+				</div>
+				<div class='status-box tofix'>
+					<h2>0</h2>
+					<h4>Servers in maintenance</h4>
+					<h5>Servers Total: 15</h5>
+				</div>
+			</section>
+			<section id='servers'>
+				<div class='server-box'>
+					<div class='bar good'></div>
+					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>UbuntuS-DB</h2>
+					<h3>3 days 3 hrs 22 min</h3>
+					<div class='first-row'>
+						<div class='gage-box'>
+							<input id='server1-cpu' type='text' value='10' class='gage'>
+							<span>CPU</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-ram' type='text' value='40' class='gage'>
+							<span>RAM</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-io' type='text' value='1.47' class='gage2'>
+							<span>I/O</span>
+						</div>
+					</div>
+					<div id='server1-ping' class='ping text-bad'>200 ms</div>
+				</div>
+				<div class='server-box'>
+					<div class='bar bad'></div>
+					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>UbuntuS-DB</h2>
+					<h3>offline</h3>
+					<div class='first-row'>
+						<div class='gage-box'>
+							<input id='server1-cpu' type='text' value='0' class='gage'>
+							<span>CPU</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-ram' type='text' value='0' class='gage'>
+							<span>RAM</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-io' type='text' value='0' class='gage2'>
+							<span>I/O</span>
+						</div>
+					</div>
+					<div id='server1-ping' class='ping text-disabled'>0 ms</div>
+				</div>
+				<div class='server-box'>
+					<div class='bar warn'></div>
+					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>UbuntuS-DB</h2>
+					<h3>3 days 3 hrs 22 min</h3>
+					<div class='first-row'>
+						<div class='gage-box'>
+							<input id='server1-cpu' type='text' value='10' class='gage'>
+							<span>CPU</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-ram' type='text' value='40' class='gage'>
+							<span>RAM</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-io' type='text' value='1.47' class='gage2'>
+							<span>I/O</span>
+						</div>
+					</div>
+					<div id='server1-ping' class='ping text-good'>20 ms</div>
+				</div>
+				<div class='server-box'>
+					<div class='bar tofix'></div>
+					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>UbuntuS-DB</h2>
+					<h3>under maintenance</h3>
+					<div class='first-row'>
+						<div class='gage-box'>
+							<input id='server1-cpu' type='text' value='0' class='gage'>
+							<span>CPU</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-ram' type='text' value='0' class='gage'>
+							<span>RAM</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-io' type='text' value='0' class='gage2'>
+							<span>I/O</span>
+						</div>
+					</div>
+					<div id='server1-ping' class='ping text-disabled'>0 ms</div>
+				</div>
+				<div class='server-box'>
+					<div class='bar disabled'></div>
+					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>UbuntuS-DB</h2>
+					<h3>disabled</h3>
+					<div class='first-row'>
+						<div class='gage-box'>
+							<input id='server1-cpu' type='text' value='0' class='gage'>
+							<span>CPU</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-ram' type='text' value='0' class='gage'>
+							<span>RAM</span>
+						</div>
+						<div class='gage-box'>
+							<input id='server1-io' type='text' value='0' class='gage2'>
+							<span>I/O</span>
+						</div>
+					</div>
+					<div id='server1-ping' class='ping text-disabled'>0 ms</div>
+				</div>
+			</section>
+			<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+			<script src='assets/js/jquery.knob.js'></script>
+			<script src='assets/js/main.js'></script>
+		</div>
+	</body>
+</html>
