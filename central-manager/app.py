@@ -193,7 +193,7 @@ def scrape_data(time):
         try:
             # get list of servers
             for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
-                servers.append(Server(row[0], row[1], row[2], row[3]))
+                servers.append(Server(row[0], row[1], row[2], row[3], row[4]))
 
             # go through each server and scrape data
             for serv in servers:
@@ -255,7 +255,7 @@ def scrape_data(time):
         time.sleep(time)
 
 
-# start Flask service
+# start Flask service: retrieve now status from a server
 @app.route('/now/<hostname>/<port>')
 def web_now_status(hostname, port):
 	ping_result = ping_server(hostname)
@@ -292,6 +292,83 @@ def web_now_status(hostname, port):
 		return jsonify(json_data)
 
 
+# start Flask service: retrieve list of servers
+@app.route('/servers')
+def web_servers():
+	servers = list()
+	# access database to retrieve servers
+	try:
+		# retrieve data
+		for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
+            servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
+		names = list()
+		types = list()
+		modes = list()
+		hosts = list()
+		ports = list()
+		for server in servers:
+			names.append(server.get_name())
+			types.append(server.get_type())
+			modes.append(server.get_mode())
+			hosts.append(server.get_host())
+			ports.append(server.get_ports())
+		
+		# create json data
+		json_data = [
+			{
+				'name': name,
+				'type': typ,
+				'mode': mode,
+				'host': host,
+				'port': port
+			}
+			for name, typ, mode, host, port in zip(names, types, modes, hosts, ports)
+		]
+		
+		# print json data
+		return jsonify(json_data)
+	except pymysql.Error as e:
+		log('SQL', 'ERROR', 'Error when trying to retrieve data from the database! STACKTRACE: {}'.format(e.args))
+        log('SQL', 'ERROR', 'Force closing program...')
+        exit()
+
+
+# start Flask service: retrieve latest errors
+@app.route('/errors/<count>')
+def web_errors(count):
+	errors = list()
+	# access database to retrieve errors
+	try:
+		# retrieve data
+		for row in cur.execute('SELECT * FROM {}_errors'.format(db_prefix)):
+			errors.append(ErrorLog(row[1], row[2], row[3], row[4]))
+		serverNames = list()
+		timestamps = list()
+		types = list()
+		msgs = list()
+		for error in errors:
+			serverNames.append(error.get_serverName())
+			timestamps.append(error.get_timestamp())
+			types.append(error.get_type())
+			msgs.append(error.get_msg())
+		
+		# create json data
+		json_data = [
+			{
+				'server_name': server_name,
+				'timestamp': timestamp,
+				'type': typ,
+				'msg': msg
+			}
+			for server_name, timestamp, typ, msg in zip(serverNames, timestamps, types, hosts, msgs)
+		]
+		
+	except pymysql.Error as e:
+		log('SQL', 'ERROR', 'Error when trying to retrieve data from the database! STACKTRACE: {}'.format(e.args))
+        log('SQL', 'ERROR', 'Force closing program...')
+        exit()
+
+
 # main "method"
 if __name__ == '__main__':
     # check to make sure the database has the required tables
@@ -305,7 +382,7 @@ if __name__ == '__main__':
         cur = con.cursor()
 
         # create/check servers table
-		# types:
+		# type:
 		# GN : General server
 		# DB : Database server
 		# EM : Email Server
@@ -315,24 +392,43 @@ if __name__ == '__main__':
 		# VM : Virtual Machine/Hypervisor Server
 		# FS : File Sharing Server
 		# SY : Security-Based Server
+		# mode:
+		# 0 : enabled
+		# 1 : disabled
+		# 2 : maintenance
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_servers (
-                    id INTEGER PRIMARY KEY,
+                    id INTEGER NOT NULL AUTO_INCREMENT,
                     name VARCHAR(100) NOT NULL,
 					type CHAR(2) NOT NULL,
+					mode CHAR(1) NOT NULL,
                     hostname VARCHAR(255) NOT NULL,
-                    port SMALLINT NOT NULL);""".format(db_prefix))
+                    port SMALLINT NOT NULL,
+					PRIMARY KEY(id));""".format(db_prefix))
+		
+		# create/check error logs table
+		# type:
+		# 0 : warning
+		# 1 : error
+		cur.execute("""CREATE TABLE IF NOT EXISTS {}_errors (
+					id INTEGER NOT NULL AUTO_INCREMENT,
+					server_name VARCHAR(100) NOT NULL,
+					timestamp DATE DEFAULT GETDATE(),
+					type CHAR(1) NOT NULL,
+					msg VARCHAR(500) NOT NULL,
+					PRIMARY KEY(id));""")
 
         # create/check ping logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_ping_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
-                    ping DECIMAL(100,2));""".format(db_prefix))
+                    ping DECIMAL(100,2),
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check memory logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_memory_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
@@ -341,54 +437,60 @@ if __name__ == '__main__':
                     ram_total DECIMAL(100,2),
                     swap_percent DECIMAL(4,1),
                     swap_used DECIMAL(100,2),
-                    swap_total DECIMAL(100,2));""".format(db_prefix))
+                    swap_total DECIMAL(100,2),
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check CPU logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_cpu_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
-                    cpu_percent DECIMAL(4,1));""".format(db_prefix))
+                    cpu_percent DECIMAL(4,1),
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check network logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_network_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
                     name VARCHAR(50),
                     sent BIGINT,
-                    received BIGINT);""".format(db_prefix))
+                    received BIGINT,
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check load logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_load_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
                     1m_avg DECIMAL(5,1),
                     5m_avg DECIMAL(5,1),
-                    15m_avg DECIMAL(5,1));""".format(db_prefix))
+                    15m_avg DECIMAL(5,1),
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check disk logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
                     device VARCHAR(50),
                     percent BIGINT,
                     used BIGINT,
-                    total BIGINT);""".format(db_prefix))
+                    total BIGINT,
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check disk logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk-io_logs (
-                    id BIGINT PRIMARY KEY,
+                    id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
-                    io DECIMAL(5,2));""".format(db_prefix))
+                    io DECIMAL(5,2),
+					PRIMARY KEY(id));""".format(db_prefix))
 
         # submit changes to SQL server
         cur.commit()
@@ -401,12 +503,18 @@ if __name__ == '__main__':
     thd = Thread(target=scrape_data, args=(interval_time))
     thd.daemon = True
     thd.start()
+	
+	# start Flask service
+	print('Starting CM service...')
+	app.run(host=flsk_host, port=flsk_port)
 
 
 class Server:
-    def __init__(self, _id, _name, _host, _port):
+    def __init__(self, _id, _name, _type, _mode, _host, _port):
         self.id = _id
         self.name = _name
+		self.typ = _type
+		self.mode = _mode
         self.host = _host
         self.port = _port
 
@@ -415,9 +523,36 @@ class Server:
 
     def get_name(self):
         return self.name
+	
+	def get_type(self):
+		return self.typ
+		
+	def get_mode(self):
+		return self.mode
 
     def get_host(self):
         return self.host
 
     def get_port(self):
         return self.port
+
+		
+class ErrorLog:
+	def __init__(self, _serverName, _timestamp, _type, _msg):
+		self.serverName = _serverName
+		self.timestamp = _timestamp
+		self.typ = _type
+		self.msg = _msg
+	
+	def get_serverName(self):
+		return self.serverName
+	
+	def get_timestamp(self):
+		# TODO
+		return timestamp
+	
+	def get_type(self):
+		return type
+	
+	def get_msg(self):
+		return msg
