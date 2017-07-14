@@ -27,28 +27,28 @@ app = Flask(__name__)
 # display current specs
 @app.route('/now')
 def web_now():
-	# retrieve current system specs
-	ram_percent, ram_used, ram_total = sram.get_memory_usage()
-	cpu_usage = scpu.get_usage()
-	boot_time = boot.get_boot_time()
-	disk_io = sdisk.get_disk_io()
-	
-	# create json object
-	json_data = {
-		'ram': {
-			'percent_used': ram_percent,
-			'used': ram_used,
-			'total': ram_total
-		},
-		'cpu': {
-			'percent_used': cpu_percent
-		},
-		'boot': {
-			'start_timestamp': boot_time
-		},
-		'disk_io': disk_io
-	}
-	
+    # retrieve current system specs
+    ram_percent, ram_used, ram_total = sram.get_memory_usage()
+    cpu_percent = scpu.get_usage()
+    boot_time = boot.get_boot_time()
+    disk_io = sdisk.get_disk_io()
+
+    # create json object
+    json_data = {
+        'ram': {
+            'percent_used': ram_percent,
+            'used': ram_used,
+            'total': ram_total
+        },
+        'cpu': {
+            'percent_used': cpu_percent
+        },
+        'boot': {
+            'start_timestamp': boot_time
+        },
+        'disk_io': disk_io
+    }
+
     # print json data
     return jsonify(json_data)
 

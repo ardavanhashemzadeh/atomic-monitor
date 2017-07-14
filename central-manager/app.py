@@ -42,13 +42,13 @@ try:
     db_name = config.get('Storage', 'Database')
     err_type = 'Storage > Prefix'
     db_prefix = config.get('Storage', 'Prefix')
-	
-	# collector
-	interval_time = config.getint('Collector', 'Interval')
-	
-	# flask connection info
-	flsk_host = config.get('UI_Feeder', 'Host')
-	flsk_port = config.getint('UI_Feeder', 'Port')
+
+    # collector
+    interval_time = config.getint('Collector', 'Interval')
+
+    # flask connection info
+    flsk_host = config.get('UI_Feeder', 'Host')
+    flsk_port = config.getint('UI_Feeder', 'Port')
 except IOError:
     print('CONFIG ERROR: Unable to load values from \"{}\"!'.format(err_type))
     print('CONFIG ERROR: Force closing program...')
@@ -84,8 +84,8 @@ def log(service, typ, msg):
     print(log_msg)
     try:
         logger.write(log_msg)
-    except IOError as e:
-        print('FILE ERROR: Unable to write log to file! Reason: {}'.format(e.args[0]))
+    except IOError as ex:
+        print('FILE ERROR: Unable to write log to file! Reason: {}'.format(ex.args[0]))
 
 
 # ping test server
@@ -111,9 +111,9 @@ def insert_ping_data(server_id, status, ping=None):
         cur.execute('INSERT INTO {}_ping_logs (server_id, status, ping) '
                     'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, ping)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [memory] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # insert new memory data to SQL database
@@ -125,9 +125,9 @@ def insert_memory_data(server_id, status, ram_percent=None, ram_used=None, ram_t
                     'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, ram_percent, ram_used,
                     ram_total, swap_percent, swap_used, swap_total)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [memory] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # insert new CPU data to SQL database
@@ -136,9 +136,9 @@ def insert_cpu_data(server_id, status, cpu_percent=None):
         cur.execute('INSERT INTO {}_cpu_logs (server_id, status, cpu_percent) '
                     'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, cpu_percent)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [cpu] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # insert new network data to SQL database
@@ -147,9 +147,9 @@ def insert_net_data(server_id, status, name=None, sent=None, received=None):
         cur.execute('INSERT INTO {}_network_logs (server_id, status, name, sent, received) '
                     'VALUES (?, ?, ?, ?)'.format(db_prefix), server_id, status, name, sent, received)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [network] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # insert new network data to SQL database
@@ -158,9 +158,9 @@ def insert_load_data(server_id, status, one_avg=None, five_avg=None, fifteen_avg
         cur.execute('INSERT INTO {}_load_logs (server_id, status, 1m_avg, 5m_avg, 15m_avg) '
                     'VALUES (?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, one_avg, five_avg, fifteen_avg)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [load] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # insert new disk data to SQL database
@@ -169,9 +169,9 @@ def insert_disk_data(server_id, status, device=None, percent=None, used=None, to
         cur.execute('INSERT INTO {}_disk_logs (server_id, status, device, percent, used, total) '
                     'VALUES (?, ?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, device, percent, used, total)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [disk] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # insert new disk I/O data to SQL database
@@ -180,9 +180,9 @@ def insert_disk_io_data(server_id, status, io=None):
         cur.execute('INSERT INTO {}_disk-io_logs (server_id, status, io) '
                     'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, io)
         cur.commit()
-    except pymysql.Error as e:
+    except pymysql.Error as ex:
         log('SQL', 'ERROR', 'Unable to insert [disk] data for server [{}] to SQL database! STACKTRACE: {}'
-            .format(server_id, e.args))
+            .format(server_id, ex.args))
 
 
 # scrape data from each agent (server)
@@ -193,7 +193,7 @@ def scrape_data(time):
         try:
             # get list of servers
             for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
-                servers.append(Server(row[0], row[1], row[2], row[3], row[4]))
+                servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
 
             # go through each server and scrape data
             for serv in servers:
@@ -201,7 +201,7 @@ def scrape_data(time):
                 if ping_result is not -1:
                     try:
                         # sniff up data from a server
-                        with urllib.request.urlopen('http://{}:{}/'.format(serv.host, serv.port)) as url:
+                        with urlopen('http://{}:{}/'.format(serv.host, serv.port)) as url:
                             data = json.loads(url.read().decode())
 
                             # insert data to SQL db
@@ -248,8 +248,8 @@ def scrape_data(time):
                     insert_load_data(serv.id, 0)
                     insert_disk_data(serv.id, 0)
                     log('AGENT', 'WARN', 'Server [{}] is not responding, skipping...'.format(serv.name))
-        except pymysql.Error as e:
-            log('SQL', 'ERROR', 'Problem when trying to retrieve data from the server! STACKTRACE: {}'.format(e.args))
+        except pymysql.Error as ex:
+            log('SQL', 'ERROR', 'Problem when trying to retrieve data from the server! STACKTRACE: {}'.format(ex.args))
             log('SQL', 'ERROR', 'Force closing program...')
             exit()
         time.sleep(time)
@@ -258,77 +258,77 @@ def scrape_data(time):
 # start Flask service: retrieve now status from a server
 @app.route('/now/<hostname>/<port>')
 def web_now_status(hostname, port):
-	ping_result = ping_server(hostname)
-	if ping_result is not -1:
-		# access central-manager process
-		with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
-			r = json.loads(url.read().decode())
-			
-			# get data
-			ram_percent = r['ram']['percent_used']
-			cpu_percent = r['cpu']['percent_used']
-			boot_time = r['boot']['start_timestamp']
-			disk_io = r['disk_io']
-			
-			# create json data
-			json_data = {
-				'status': 'online',
-				'ping': ping_result,
-				'ram_percent': ram_percent,
-				'cpu_percent': cpu_percent,
-				'boot_time': boot_time,
-				'disk_io': disk_io
-			}
-			
-			# print json data
-			return jsonify(json_data)
-	else:
-		# create json data
-		json_data = {
-			'status': 'offline'
-		}
-		
-		# print json data
-		return jsonify(json_data)
+    ping_result = ping_server(hostname)
+    if ping_result is not -1:
+        # access central-manager process
+        with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
+            r = json.loads(url.read().decode())
+
+            # get data
+            ram_percent = r['ram']['percent_used']
+            cpu_percent = r['cpu']['percent_used']
+            boot_time = r['boot']['start_timestamp']
+            disk_io = r['disk_io']
+
+            # create json data
+            json_data = {
+                'status': 'online',
+                'ping': ping_result,
+                'ram_percent': ram_percent,
+                'cpu_percent': cpu_percent,
+                'boot_time': boot_time,
+                'disk_io': disk_io
+            }
+
+            # print json data
+            return jsonify(json_data)
+    else:
+        # create json data
+        json_data = {
+            'status': 'offline'
+        }
+
+        # print json data
+        return jsonify(json_data)
 
 
 # start Flask service: retrieve list of servers
 @app.route('/servers')
 def web_servers():
-	servers = list()
-	# access database to retrieve servers
-	try:
-		# retrieve data
-		for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
+    servers = list()
+    # access database to retrieve servers
+    try:
+        # retrieve data
+        for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
             servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
-		names = list()
-		types = list()
-		modes = list()
-		hosts = list()
-		ports = list()
-		for server in servers:
-			names.append(server.get_name())
-			types.append(server.get_type())
-			modes.append(server.get_mode())
-			hosts.append(server.get_host())
-			ports.append(server.get_ports())
-		
-		# create json data
-		json_data = [
-			{
-				'name': name,
-				'type': typ,
-				'mode': mode,
-				'host': host,
-				'port': port
-			}
-			for name, typ, mode, host, port in zip(names, types, modes, hosts, ports)
-		]
-		
-		# print json data
-		return jsonify(json_data)
-	except pymysql.Error as e:
-		log('SQL', 'ERROR', 'Error when trying to retrieve data from the database! STACKTRACE: {}'.format(e.args))
+        names = list()
+        types = list()
+        modes = list()
+        hosts = list()
+        ports = list()
+        for server in servers:
+            names.append(server.get_name())
+            types.append(server.get_type())
+            modes.append(server.get_mode())
+            hosts.append(server.get_host())
+            ports.append(server.get_ports())
+
+        # create json data
+        json_data = [
+            {
+                'name': name,
+                'type': typ,
+                'mode': mode,
+                'host': host,
+                'port': port
+            }
+            for name, typ, mode, host, port in zip(names, types, modes, hosts, ports)
+        ]
+
+        # print json data
+        return jsonify(json_data)
+    except pymysql.Error as ex:
+        log('SQL', 'ERROR', 'Error when trying to retrieve data from the database! STACKTRACE: {}'.format(ex.args))
         log('SQL', 'ERROR', 'Force closing program...')
         exit()
 
@@ -336,35 +336,37 @@ def web_servers():
 # start Flask service: retrieve latest errors
 @app.route('/errors/<count>')
 def web_errors(count):
-	errors = list()
-	# access database to retrieve errors
-	try:
-		# retrieve data
-		for row in cur.execute('SELECT * FROM {}_errors'.format(db_prefix)):
-			errors.append(ErrorLog(row[1], row[2], row[3], row[4]))
-		serverNames = list()
-		timestamps = list()
-		types = list()
-		msgs = list()
-		for error in errors:
-			serverNames.append(error.get_serverName())
-			timestamps.append(error.get_timestamp())
-			types.append(error.get_type())
-			msgs.append(error.get_msg())
-		
-		# create json data
-		json_data = [
-			{
-				'server_name': server_name,
-				'timestamp': timestamp,
-				'type': typ,
-				'msg': msg
-			}
-			for server_name, timestamp, typ, msg in zip(serverNames, timestamps, types, hosts, msgs)
-		]
-		
-	except pymysql.Error as e:
-		log('SQL', 'ERROR', 'Error when trying to retrieve data from the database! STACKTRACE: {}'.format(e.args))
+    errors = list()
+    # access database to retrieve errors
+    try:
+        # retrieve data
+        for row in cur.execute('SELECT * FROM {}_errors ORDER BY id LIMIT {}'.format(db_prefix, count)):
+            errors.append(ErrorLog(row[1], row[2], row[3], row[4]))
+        servernames = list()
+        timestamps = list()
+        types = list()
+        msgs = list()
+        for error in errors:
+            servernames.append(error.get_servername())
+            timestamps.append(error.get_timestamp())
+            types.append(error.get_type())
+            msgs.append(error.get_msg())
+
+        # create json data
+        json_data = [
+            {
+                'server_name': server_name,
+                'timestamp': timestamp,
+                'type': typ,
+                'msg': msg
+            }
+            for server_name, timestamp, typ, msg in zip(servernames, timestamps, types, msgs)
+        ]
+
+        # print json data
+        return jsonify(json_data)
+    except pymysql.Error as ex:
+        log('SQL', 'ERROR', 'Error when trying to retrieve data from the database! STACKTRACE: {}'.format(ex.args))
         log('SQL', 'ERROR', 'Force closing program...')
         exit()
 
@@ -382,40 +384,40 @@ if __name__ == '__main__':
         cur = con.cursor()
 
         # create/check servers table
-		# type:
-		# GN : General server
-		# DB : Database server
-		# EM : Email Server
-		# WB : Website Server
-		# FW : Firewall System
-		# AD : Active Directory Server
-		# VM : Virtual Machine/Hypervisor Server
-		# FS : File Sharing Server
-		# SY : Security-Based Server
-		# mode:
-		# 0 : enabled
-		# 1 : disabled
-		# 2 : maintenance
+        # type:
+        # GN : General server
+        # DB : Database server
+        # EM : Email Server
+        # WB : Website Server
+        # FW : Firewall System
+        # AD : Active Directory Server
+        # VM : Virtual Machine/Hypervisor Server
+        # FS : File Sharing Server
+        # SY : Security-Based Server
+        # mode:
+        # 0 : enabled
+        # 1 : disabled
+        # 2 : maintenance
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_servers (
                     id INTEGER NOT NULL AUTO_INCREMENT,
                     name VARCHAR(100) NOT NULL,
-					type CHAR(2) NOT NULL,
-					mode CHAR(1) NOT NULL,
+                    type CHAR(2) NOT NULL,
+                    mode CHAR(1) NOT NULL,
                     hostname VARCHAR(255) NOT NULL,
                     port SMALLINT NOT NULL,
-					PRIMARY KEY(id));""".format(db_prefix))
-		
-		# create/check error logs table
-		# type:
-		# 0 : warning
-		# 1 : error
-		cur.execute("""CREATE TABLE IF NOT EXISTS {}_errors (
-					id INTEGER NOT NULL AUTO_INCREMENT,
-					server_name VARCHAR(100) NOT NULL,
-					timestamp DATE DEFAULT GETDATE(),
-					type CHAR(1) NOT NULL,
-					msg VARCHAR(500) NOT NULL,
-					PRIMARY KEY(id));""")
+                    PRIMARY KEY(id));""".format(db_prefix))
+
+        # create/check error logs table
+        # type:
+        # 0 : warning
+        # 1 : error
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_errors (
+                    id INTEGER NOT NULL AUTO_INCREMENT,
+                    server_name VARCHAR(100) NOT NULL,
+                    timestamp DATE DEFAULT GETDATE(),
+                    type CHAR(1) NOT NULL,
+                    msg VARCHAR(500) NOT NULL,
+                    PRIMARY KEY(id));""")
 
         # create/check ping logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_ping_logs (
@@ -424,7 +426,7 @@ if __name__ == '__main__':
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
                     ping DECIMAL(100,2),
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check memory logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_memory_logs (
@@ -438,7 +440,7 @@ if __name__ == '__main__':
                     swap_percent DECIMAL(4,1),
                     swap_used DECIMAL(100,2),
                     swap_total DECIMAL(100,2),
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check CPU logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_cpu_logs (
@@ -447,7 +449,7 @@ if __name__ == '__main__':
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
                     cpu_percent DECIMAL(4,1),
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check network logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_network_logs (
@@ -458,7 +460,7 @@ if __name__ == '__main__':
                     name VARCHAR(50),
                     sent BIGINT,
                     received BIGINT,
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check load logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_load_logs (
@@ -469,7 +471,7 @@ if __name__ == '__main__':
                     1m_avg DECIMAL(5,1),
                     5m_avg DECIMAL(5,1),
                     15m_avg DECIMAL(5,1),
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check disk logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk_logs (
@@ -481,7 +483,7 @@ if __name__ == '__main__':
                     percent BIGINT,
                     used BIGINT,
                     total BIGINT,
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # create/check disk logs table
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk-io_logs (
@@ -490,7 +492,7 @@ if __name__ == '__main__':
                     timestamp DATE DEFAULT GETDATE(),
                     status ENUM(0,1),
                     io DECIMAL(5,2),
-					PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(id));""".format(db_prefix))
 
         # submit changes to SQL server
         cur.commit()
@@ -500,21 +502,21 @@ if __name__ == '__main__':
         exit()
 
     # start scraping thread job!
-    thd = Thread(target=scrape_data, args=(interval_time))
+    thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
     thd.start()
-	
-	# start Flask service
-	print('Starting CM service...')
-	app.run(host=flsk_host, port=flsk_port)
+
+    # start Flask service
+    print('Starting CM service...')
+    app.run(host=flsk_host, port=flsk_port)
 
 
 class Server:
     def __init__(self, _id, _name, _type, _mode, _host, _port):
         self.id = _id
         self.name = _name
-		self.typ = _type
-		self.mode = _mode
+        self.typ = _type
+        self.mode = _mode
         self.host = _host
         self.port = _port
 
@@ -523,12 +525,12 @@ class Server:
 
     def get_name(self):
         return self.name
-	
-	def get_type(self):
-		return self.typ
-		
-	def get_mode(self):
-		return self.mode
+
+    def get_type(self):
+        return self.typ
+
+    def get_mode(self):
+        return self.mode
 
     def get_host(self):
         return self.host
@@ -536,23 +538,23 @@ class Server:
     def get_port(self):
         return self.port
 
-		
+
 class ErrorLog:
-	def __init__(self, _serverName, _timestamp, _type, _msg):
-		self.serverName = _serverName
-		self.timestamp = _timestamp
-		self.typ = _type
-		self.msg = _msg
-	
-	def get_serverName(self):
-		return self.serverName
-	
-	def get_timestamp(self):
-		# TODO
-		return timestamp
-	
-	def get_type(self):
-		return type
-	
-	def get_msg(self):
-		return msg
+    def __init__(self, _servername, _timestamp, _type, _msg):
+        self.servername = _servername
+        self.timestamp = _timestamp
+        self.typ = _type
+        self.msg = _msg
+
+    def get_servername(self):
+        return self.servername
+
+    def get_timestamp(self):
+        # TODO
+        return self.timestamp
+
+    def get_type(self):
+        return self.typ
+
+    def get_msg(self):
+        return self.msg
