@@ -14,6 +14,7 @@ $('.gage').knob({
 	},
 	font: 'sans-serif'
 });
+
 $('.gage2').knob({
 	width: '60',
 	height: '50',
