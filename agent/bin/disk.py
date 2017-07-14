@@ -36,7 +36,7 @@ class Disk:
         interval = (now - counter_ts).total_seconds()
 
         disk = psutil.disk_io_counters(perdisk=False)
-        io = (disk.write_types - disk_counters.write_types) / interval
+        io = (disk.write_bytes - disk_counters.write_bytes) / interval
 
         return io
 
