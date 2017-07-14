@@ -2,8 +2,9 @@
 from configparser import ConfigParser
 from datetime import datetime
 from threading import Thread
+from flask import Flask, jsonify
 
-import urllib.request
+from urllib.request import urlopen
 import pymysql
 import pexpect
 import json
@@ -21,6 +22,8 @@ db_pass = ''
 db_name = ''
 db_prefix = ''
 interval_time = 0
+flsk_host = ''
+flsk_port = 0
 try:
     # log values
     err_type = 'Log > URL'
@@ -42,6 +45,10 @@ try:
 	
 	# collector
 	interval_time = config.getint('Collector', 'Interval')
+	
+	# flask connection info
+	flsk_host = config.get('UI_Feeder', 'Host')
+	flsk_port = config.getint('UI_Feeder', 'Port')
 except IOError:
     print('CONFIG ERROR: Unable to load values from \"{}\"!'.format(err_type))
     print('CONFIG ERROR: Force closing program...')
@@ -55,6 +62,10 @@ except IOError:
     print('FILE ERROR: Unable to open file: {}!'.format(config.get('Log', 'URL')))
     print('FILE ERROR: Force closing program...')
     exit()
+
+
+# setup flask
+app = Flask(__name__)
 
 
 # prepare database connection
@@ -242,6 +253,43 @@ def scrape_data(time):
             log('SQL', 'ERROR', 'Force closing program...')
             exit()
         time.sleep(time)
+
+
+# start Flask service
+@app.route('/now/<hostname>/<port>')
+def web_now_status(hostname, port):
+	ping_result = ping_server(hostname)
+	if ping_result is not -1:
+		# access central-manager process
+		with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
+			r = json.loads(url.read().decode())
+			
+			# get data
+			ram_percent = r['ram']['percent_used']
+			cpu_percent = r['cpu']['percent_used']
+			boot_time = r['boot']['start_timestamp']
+			disk_io = r['disk_io']
+			
+			# create json data
+			json_data = {
+				'status': 'online',
+				'ping': ping_result,
+				'ram_percent': ram_percent,
+				'cpu_percent': cpu_percent,
+				'boot_time': boot_time,
+				'disk_io': disk_io
+			}
+			
+			# print json data
+			return jsonify(json_data)
+	else:
+		# create json data
+		json_data = {
+			'status': 'offline'
+		}
+		
+		# print json data
+		return jsonify(json_data)
 
 
 # main "method"
