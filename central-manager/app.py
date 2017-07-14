@@ -340,7 +340,8 @@ def web_errors(count):
     # access database to retrieve errors
     try:
         # retrieve data
-        for row in cur.execute('SELECT * FROM {}_errors ORDER BY id LIMIT {}'.format(db_prefix, count)):
+        for row in cur.execute('(SELECT * FROM {}_errors ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(db_prefix,
+                                                                                                             count)):
             errors.append(ErrorLog(row[1], row[2], row[3], row[4]))
         servernames = list()
         timestamps = list()
