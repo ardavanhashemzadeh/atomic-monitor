@@ -52,6 +52,7 @@ def web():
         disk_percents.append(disk.get_percent())
         disk_uses.append(disk.get_used())
         disk_totals.append(disk.get_total())
+    disk_io = sdisk.get_disk_io()
     processes = proc.get_processes()
     proc_ids, proc_names, proc_times, proc_statuses, proc_cpus, proc_rams = [], [], [], [], [], []
     for process in processes:
@@ -100,15 +101,18 @@ def web():
                 'seconds': boot_time_sec
             }
         },
-        'disks': [
-            {
-                'name': name,
-                'percent_used': percent,
-                'used': used,
-                'total': total
-            }
-            for name, percent, used, total in zip(disk_names, disk_percents, disk_uses, disk_totals)
-        ],
+        'disks': {
+            'io': disk_io,
+            'list': [
+                {
+                    'name': name,
+                    'percent_used': percent,
+                    'used': used,
+                    'total': total
+                }
+                for name, percent, used, total in zip(disk_names, disk_percents, disk_uses, disk_totals)
+            ]
+        },
         'process': [
             {
                 'id': proc_id,

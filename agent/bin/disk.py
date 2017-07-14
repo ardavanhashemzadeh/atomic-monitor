@@ -1,4 +1,6 @@
+import datetime
 import psutil
+import time
 
 
 def gb_convert(byts):
@@ -23,6 +25,20 @@ class Disk:
 
         # list of disks
         return disks
+
+    # get disk I/O
+    def get_disk_io(self):
+        disk_counters = psutil.disk_io_counters(perdisk=False)
+        counter_ts = datetime.datetime.now()
+        time.sleep(0.2)
+
+        now = datetime.datetime.now()
+        interval = (now - counter_ts).total_seconds()
+
+        disk = psutil.disk_io_counters(perdisk=False)
+        io = (disk.write_types - disk_counters.write_types) / interval
+
+        return io
 
 
 class Device:

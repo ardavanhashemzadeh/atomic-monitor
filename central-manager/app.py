@@ -158,9 +158,20 @@ def insert_disk_data(server_id, status, device=None, percent=None, used=None, to
             .format(server_id, e.args))
 
 
+# insert new disk I/O data to SQL database
+def insert_disk_io_data(server_id, status, io=None):
+    try:
+        cur.execute('INSERT INTO {}_disk-io_logs (server_id, status, io) '
+                    'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, io)
+        cur.commit()
+    except pymysql.Error as e:
+        log('SQL', 'ERROR', 'Unable to insert [disk] data for server [{}] to SQL database! STACKTRACE: {}'
+            .format(server_id, e.args))
+
+
 # scrape data from each agent (server)
 def scrape_data(time):
-    while(True):
+    while True:
         # retrieve list of servers
         servers = list()
         try:
@@ -193,21 +204,22 @@ def scrape_data(time):
                             for net_nic in data['network']:
                                 insert_net_data(serv.id,
                                                 1,
-                                                data['name'],
-                                                data['mb_sent'],
-                                                data['mb_received'])
+                                                net_nic['name'],
+                                                net_nic['mb_sent'],
+                                                net_nic['mb_received'])
                             insert_load_data(serv.id,
                                              1,
                                              data['load']['1min'],
                                              data['load']['5min'],
                                              data['load']['15min'])
-                            for disk in data['disks']:
+
+                            for disk in data['disks']['list']:
                                 insert_disk_data(serv.id,
                                                  1,
-                                                 data['device'],
-                                                 data['percent_used'],
-                                                 data['used'],
-                                                 data['total'])
+                                                 disk['device'],
+                                                 disk['percent_used'],
+                                                 disk['used'],
+                                                 disk['total'])
                             log('CM', 'DEBUG', 'Retrieved and logged data for server [{}]!'.format(serv.name))
                     except pymysql.Error:
                         log('AGENT', 'ERROR', 'Unable to access server [{}]! Please make sure the port is open on that '
@@ -305,6 +317,14 @@ if __name__ == '__main__':
                     percent BIGINT,
                     used BIGINT,
                     total BIGINT);""".format(db_prefix))
+
+        # create/check disk logs table
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk-io_logs (
+                    id BIGINT PRIMARY KEY,
+                    server_id INTEGER NOT NULL,
+                    timestamp DATE DEFAULT GETDATE(),
+                    status ENUM(0,1),
+                    io DECIMAL(5,2));""".format(db_prefix))
 
         # submit changes to SQL server
         cur.commit()
