@@ -4,6 +4,7 @@ import psutil
 
 process_list = list()
 
+
 # convert to # hours, minutes, seconds
 def sec_to_time(raw_sec):
     minu, sec = divmod(raw_sec, 60)
@@ -12,31 +13,33 @@ def sec_to_time(raw_sec):
 
     return '{},{},{},{}'.format(day, hr, minu, sec)
 
+
 # get process info in thread mode
 def get_process_info(pid):
-	proc = psutil.Process(pid)
-	name = proc.name()
-	time = sec_to_time(proc.create_time())
-	status = proc.as_dict()['status']
-	cpu = proc.cpu_percent(interval=1.0)
-	ram = proc.memory_percent()
-	process_list.append(ProcessID(pid, name, time, status, cpu, ram))
+    proc = psutil.Process(pid)
+    name = proc.name()
+    time = sec_to_time(proc.create_time())
+    status = proc.as_dict()['status']
+    cpu = proc.cpu_percent(interval=1.0)
+    ram = proc.memory_percent()
+    process_list.append(ProcessID(pid, name, time, status, cpu, ram))
 
 
 class Process:
     # get list of all current processes
     def get_processes(self):
-	threads = list()
+        global process_list
+        threads = list()
         process_list = list()
-		# create new thread for each pid
-		for pid in psutil.pids():
-			thd = threading.Thread(target=NAME_HERE)
-			thd.start()
-			threads.append(thd)
-		
-		# force finish all threads to return result
-		for thd in threads:
-			thd.join()
+        # create new thread for each pid
+        for pid in psutil.pids():
+            thd = threading.Thread(target=get_process_info, args=(pid, ))
+            thd.start()
+            threads.append(thd)
+
+        # force finish all threads to return result
+        for thd in threads:
+            thd.join()
 
         # list of processes w/ their specs
         return process_list
