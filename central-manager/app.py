@@ -257,9 +257,20 @@ if __name__ == '__main__':
         cur = con.cursor()
 
         # create/check servers table
+		# types:
+		# GN : General server
+		# DB : Database server
+		# EM : Email Server
+		# WB : Website Server
+		# FW : Firewall System
+		# AD : Active Directory Server
+		# VM : Virtual Machine/Hypervisor Server
+		# FS : File Sharing Server
+		# SY : Security-Based Server
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_servers (
                     id INTEGER PRIMARY KEY,
                     name VARCHAR(100) NOT NULL,
+					type CHAR(2) NOT NULL,
                     hostname VARCHAR(255) NOT NULL,
                     port SMALLINT NOT NULL);""".format(db_prefix))
 
