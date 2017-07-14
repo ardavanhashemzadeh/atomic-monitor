@@ -178,12 +178,18 @@ div#body section#servers a.server-box h2 {
 	padding: 6px 0 0 15px;
 	font-family: 'Roboto', sans-serif;
 	font-weight: 300;
-	font-size: 1.45em;
+	font-size: 1.35em;
+	position: inline-block;
 }
 div#body section#servers a.server-box h2 span {
 	padding-right: 8px;
+	position: inline-block;
+	width: 30px;
+	text-align: center;
+	font-size: 0.8em;
+	opacity: 0.9;
 	position: relative;
-	top: 1px;
+	top: -2px;
 }
 div#body section#servers a.server-box h3 {
 	margin: 0;
@@ -198,7 +204,7 @@ div#body section#servers a.server-box div.first-row {
 }
 div#body section#servers a.server-box div.first-row div {
 	display: inline-block;
-	margin: 0 8px;
+	margin: 0 7px;
 	position: relative;
 }
 div#body section#servers a.server-box div.first-row div span {
