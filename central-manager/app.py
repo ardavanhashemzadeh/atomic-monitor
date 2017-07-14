@@ -13,12 +13,14 @@ import json
 config = ConfigParser()
 config.read('config.ini')
 err_type = ''
+log_file = ''
 db_host = ''
 db_port = 0
 db_user = ''
 db_pass = ''
 db_name = ''
 db_prefix = ''
+interval_time = 0
 try:
     # log values
     err_type = 'Log > URL'
@@ -37,6 +39,9 @@ try:
     db_name = config.get('Storage', 'Database')
     err_type = 'Storage > Prefix'
     db_prefix = config.get('Storage', 'Prefix')
+	
+	# collector
+	interval_time = config.getint('Collector', 'Interval')
 except IOError:
     print('CONFIG ERROR: Unable to load values from \"{}\"!'.format(err_type))
     print('CONFIG ERROR: Force closing program...')
@@ -334,7 +339,7 @@ if __name__ == '__main__':
         exit()
 
     # start scraping thread job!
-    thd = Thread(target=scrape_data, args=(config.getint('Scraping_Data', 'Time_Interval')))
+    thd = Thread(target=scrape_data, args=(interval_time))
     thd.daemon = True
     thd.start()
 
