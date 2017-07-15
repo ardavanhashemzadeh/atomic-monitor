@@ -15,13 +15,13 @@ class Disk:
         # goes through the list of disks & retrieve usage
         disks = list()
         for dsk in status:
-            specs = psutil.disk_usage(dsk.device)
+            specs = psutil.disk_usage(dsk.mountpoint)
 
             # convert bytes to gigabytes
             used = gb_convert(specs.used)
             total = gb_convert(specs.total)
 
-            disks.append(Device(dsk.device, specs.percent, used, total))
+            disks.append(Device(dsk.mountpoint, specs.percent, used, total))
 
         # list of disks
         return disks
