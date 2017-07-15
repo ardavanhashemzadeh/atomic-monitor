@@ -29,7 +29,7 @@ class Network:
             after_list.append(NIC_IO(nic_list[net].bytes_sent, nic_list[net].bytes_recv))
 
         # do math to get difference in sent/recv
-        for i in range(0, len(before_list) - 1):
+        for i in range(0, len(before_list)):
             sent = mb_convert(after_list[i].sent - before_list[i].sent)
             recv = mb_convert(after_list[i].recv - before_list[i].recv)
 
