@@ -106,6 +106,17 @@ def ping_server(host):
 
 
 # insert new ping data to SQL database
+def insert_log_data(server_name, typ, message):
+    try:
+        cur.execute('INSERT INTO {}_logs (server_name, type, msg) '
+                    'VALUES (?, ?, ?)'.format(db_prefix), server_name, typ, message)
+        cur.commit()
+    except pymysql.Error as ex:
+        log('SQL', 'ERROR', 'Unable to insert [error log] data for server [{}] to SQL database! STACKTRACE: {}'
+            .format(server_name, ex.args))
+
+
+# insert new ping data to SQL database
 def insert_ping_data(server_id, status, ping=None):
     try:
         cur.execute('INSERT INTO {}_ping_logs (server_id, status, ping) '
@@ -206,6 +217,10 @@ def scrape_data(time):
 
                             # insert data to SQL db
                             insert_ping_data(serv.id, 1, ping_result)
+                            if ping_result > 200:
+                                insert_log_data(serv.name, 0, 'Slow ping response: {} ms'.format(ping_result))
+
+                            # insert ram data to SQL db
                             insert_memory_data(serv.id,
                                                1,
                                                data['memory']['ram']['percent_used'],
@@ -214,21 +229,43 @@ def scrape_data(time):
                                                data['memory']['swap']['percent_used'],
                                                data['memory']['swap']['used'],
                                                data['memory']['swap']['total'])
+                            if data['memory']['ram']['percent_used'] >= 90:
+                                insert_log_data(serv.name, 0, 'High RAM usage: {}%'.format(data['memory']['ram']
+                                                                                           ['percent_used']))
+
+                            # insert CPU data to SQL db
                             insert_cpu_data(serv.id,
                                             1,
                                             data['cpu']['percent_used'])
+                            if data['cpu']['percent_used'] >= 90:
+                                insert_log_data(serv.name, 0, 'High CPU usage: {}%'.format(data['cpu']['percent_used']))
+
+                            # insert network data to SQL db
                             for net_nic in data['network']:
                                 insert_net_data(serv.id,
                                                 1,
                                                 net_nic['name'],
                                                 net_nic['mb_sent'],
                                                 net_nic['mb_received'])
+
+                            # insert load average data to SQL db
                             insert_load_data(serv.id,
                                              1,
                                              data['load']['1min'],
                                              data['load']['5min'],
                                              data['load']['15min'])
+                            if data['load']['1min'] is not None:
+                                if data['load']['1min'] > 1.00:
+                                    insert_log_data(serv.name, 0,
+                                                    'High 1m load usage: {}'.format(data['load']['1min']))
+                                elif data['load']['5min'] > 1.00:
+                                    insert_log_data(serv.name, 0,
+                                                    'High 5m load usage: {}'.format(data['load']['5min']))
+                                elif data['load']['15min'] > 1.00:
+                                    insert_log_data(serv.name, 0,
+                                                    'High 15m load usage: {}'.format(data['load']['15min']))
 
+                            # insert disk data to SQL db
                             for disk in data['disks']['list']:
                                 insert_disk_data(serv.id,
                                                  1,
@@ -236,6 +273,10 @@ def scrape_data(time):
                                                  disk['percent_used'],
                                                  disk['used'],
                                                  disk['total'])
+                                if disk['percent_used'] > 90:
+                                    insert_log_data(serv.name, 0,
+                                                    'High disk space usage: {}%'.format(disk['percent_used']))
+
                             log('CM', 'DEBUG', 'Retrieved and logged data for server [{}]!'.format(serv.name))
                     except pymysql.Error:
                         log('AGENT', 'ERROR', 'Unable to access server [{}]! Please make sure the port is open on that '
@@ -247,6 +288,7 @@ def scrape_data(time):
                     insert_net_data(serv.id, 0)
                     insert_load_data(serv.id, 0)
                     insert_disk_data(serv.id, 0)
+                    insert_log_data(serv.name, 1, 'Server not responding to ping')
                     log('AGENT', 'WARN', 'Server [{}] is not responding, skipping...'.format(serv.name))
         except pymysql.Error as ex:
             log('SQL', 'ERROR', 'Problem when trying to retrieve data from the server! STACKTRACE: {}'.format(ex.args))
@@ -340,8 +382,8 @@ def web_errors(count):
     # access database to retrieve errors
     try:
         # retrieve data
-        for row in cur.execute('(SELECT * FROM {}_errors ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(db_prefix,
-                                                                                                             count)):
+        for row in cur.execute('(SELECT * FROM {}_logs ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(db_prefix,
+                                                                                                           count)):
             errors.append(ErrorLog(row[1], row[2], row[3], row[4]))
         servernames = list()
         timestamps = list()
@@ -412,7 +454,7 @@ if __name__ == '__main__':
         # type:
         # 0 : warning
         # 1 : error
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_errors (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_logs (
                     id INTEGER NOT NULL AUTO_INCREMENT,
                     server_name VARCHAR(100) NOT NULL,
                     timestamp DATE DEFAULT GETDATE(),
