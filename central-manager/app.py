@@ -121,7 +121,7 @@ def insert_log_data(server_name, typ, message):
 # insert new ping data to SQL database
 def insert_ping_data(server_id, status, ping=None):
     try:
-        cur.execute('INSERT INTO {}_ping_logs (server_id, status, ping) '
+        cur.execute('INSERT INTO {}_ping (server_id, status, ping) '
                     'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, ping)
         cur.commit()
     except pymysql.Error as ex:
@@ -133,7 +133,7 @@ def insert_ping_data(server_id, status, ping=None):
 def insert_memory_data(server_id, status, ram_percent=None, ram_used=None, ram_total=None, swap_percent=None,
                        swap_used=None, swap_total=None):
     try:
-        cur.execute('INSERT INTO {}_memory_logs (server_id, status, ram_percent, ram_used, ram_total, swap_percent, '
+        cur.execute('INSERT INTO {}_memory (server_id, status, ram_percent, ram_used, ram_total, swap_percent, '
                     'swap_used, swap_total) '
                     'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, ram_percent, ram_used,
                     ram_total, swap_percent, swap_used, swap_total)
@@ -146,7 +146,7 @@ def insert_memory_data(server_id, status, ram_percent=None, ram_used=None, ram_t
 # insert new CPU data to SQL database
 def insert_cpu_data(server_id, status, cpu_percent=None):
     try:
-        cur.execute('INSERT INTO {}_cpu_logs (server_id, status, cpu_percent) '
+        cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) '
                     'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, cpu_percent)
         cur.commit()
     except pymysql.Error as ex:
@@ -157,7 +157,7 @@ def insert_cpu_data(server_id, status, cpu_percent=None):
 # insert new network data to SQL database
 def insert_net_data(server_id, status, name=None, sent=None, received=None):
     try:
-        cur.execute('INSERT INTO {}_network_logs (server_id, status, name, sent, received) '
+        cur.execute('INSERT INTO {}_network (server_id, status, name, sent, received) '
                     'VALUES (?, ?, ?, ?)'.format(db_prefix), server_id, status, name, sent, received)
         cur.commit()
     except pymysql.Error as ex:
@@ -168,7 +168,7 @@ def insert_net_data(server_id, status, name=None, sent=None, received=None):
 # insert new network data to SQL database
 def insert_load_data(server_id, status, one_avg=None, five_avg=None, fifteen_avg=None):
     try:
-        cur.execute('INSERT INTO {}_load_logs (server_id, status, 1m_avg, 5m_avg, 15m_avg) '
+        cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) '
                     'VALUES (?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, one_avg, five_avg, fifteen_avg)
         cur.commit()
     except pymysql.Error as ex:
@@ -179,7 +179,7 @@ def insert_load_data(server_id, status, one_avg=None, five_avg=None, fifteen_avg
 # insert new disk data to SQL database
 def insert_disk_data(server_id, status, device=None, percent=None, used=None, total=None):
     try:
-        cur.execute('INSERT INTO {}_disk_logs (server_id, status, device, percent, used, total) '
+        cur.execute('INSERT INTO {}_disk (server_id, status, device, percent, used, total) '
                     'VALUES (?, ?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, device, percent, used, total)
         cur.commit()
     except pymysql.Error as ex:
@@ -190,7 +190,7 @@ def insert_disk_data(server_id, status, device=None, percent=None, used=None, to
 # insert new disk I/O data to SQL database
 def insert_disk_io_data(server_id, status, io=None):
     try:
-        cur.execute('INSERT INTO {}_disk-io_logs (server_id, status, io) '
+        cur.execute('INSERT INTO {}_disk_io (server_id, status, io) '
                     'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, io)
         cur.commit()
     except pymysql.Error as ex:
@@ -205,7 +205,7 @@ def scrape_data(time):
         servers = list()
         try:
             # get list of servers
-            for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
+            for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
                 servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
 
             # go through each server and scrape data
@@ -343,7 +343,7 @@ def web_servers():
     # access database to retrieve servers
     try:
         # retrieve data
-        for row in cur.execute('SELECT * FROM {}_servers'.format(db_prefix)):
+        for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
             servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
         names, types, modes, hosts, ports = [], [], [], [], []
         for server in servers:
@@ -380,7 +380,7 @@ def web_errors(count):
     # access database to retrieve errors
     try:
         # retrieve data
-        for row in cur.execute('(SELECT * FROM {}_logs ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(db_prefix,
+        for row in cur.execute('(SELECT * FROM {}_log ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(db_prefix,
                                                                                                            count)):
             errors.append(ErrorLog(row[1], row[2], row[3], row[4]))
         servernames, timestamps, types, msgs = [], [], [], []
@@ -440,7 +440,7 @@ if __name__ == '__main__':
         # 0 : enabled
         # 1 : disabled
         # 2 : maintenance
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_servers (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_server (
                     id INTEGER NOT NULL AUTO_INCREMENT,
                     name VARCHAR(100) NOT NULL,
                     type CHAR(2) NOT NULL,
@@ -448,33 +448,33 @@ if __name__ == '__main__':
                     hostname VARCHAR(255) NOT NULL,
                     port SMALLINT NOT NULL,
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_servers'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_server table.'.format(db_prefix))
 
         # create/check error logs table
         # type:
         # 0 : warning
         # 1 : error
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_log (
                     id INTEGER NOT NULL AUTO_INCREMENT,
                     server_name VARCHAR(100) NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     type CHAR(1) NOT NULL,
                     msg VARCHAR(500) NOT NULL,
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_log table.'.format(db_prefix))
 
         # create/check ping logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_ping_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_ping (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status CHAR(1),
                     ping FLOAT(100,2),
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_ping_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_ping table.'.format(db_prefix))
 
         # create/check memory logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_memory_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_memory (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -486,20 +486,20 @@ if __name__ == '__main__':
                     swap_used FLOAT(100,2),
                     swap_total FLOAT(100,2),
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_memory_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_memory table.'.format(db_prefix))
 
         # create/check CPU logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_cpu_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_cpu (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status CHAR(1),
                     cpu_percent FLOAT(4,1),
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_cpu_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_cpu table.'.format(db_prefix))
 
         # create/check network logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_network_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_network (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -508,10 +508,10 @@ if __name__ == '__main__':
                     sent BIGINT,
                     received BIGINT,
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_network_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_network table.'.format(db_prefix))
 
         # create/check load logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_load_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_load_average (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -520,10 +520,10 @@ if __name__ == '__main__':
                     5m_avg DECIMAL(5,1),
                     15m_avg DECIMAL(5,1),
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_load_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_load_average table.'.format(db_prefix))
 
         # create/check disk logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -533,17 +533,17 @@ if __name__ == '__main__':
                     used BIGINT,
                     total BIGINT,
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_disk_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_disk table.'.format(db_prefix))
 
         # create/check disk logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_diskio_logs (
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk_io (
                     id BIGINT NOT NULL AUTO_INCREMENT,
                     server_id INTEGER NOT NULL,
                     stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status CHAR(1),
                     io DECIMAL(5,2),
                     PRIMARY KEY(id));""".format(db_prefix))
-        log('SQL', 'DEBUG', 'Checking {}_diskio_logs'.format(db_prefix))
+        log('SQL', 'DEBUG', 'Checking {}_disk_io table.'.format(db_prefix))
 
         # submit changes to SQL server
         con.commit()
