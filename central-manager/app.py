@@ -387,4 +387,4 @@ if __name__ == '__main__':
 
     # start Flask service
 	logging.info('Starting Flask service...', extra={'topic': 'CM'})
-app.run(host=flsk_host, port=flsk_port)
+    app.run(host=flsk_host, port=flsk_port)
