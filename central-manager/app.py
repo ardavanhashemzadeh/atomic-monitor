@@ -221,6 +221,11 @@ def scrape_data(time):
 													serv.name, 
 													0,
                                                     'High disk space usage: {}%'.format(disk['percent_used']))
+                            
+                            # insert SQL metrics to SQL db
+                            if data['sql_metric']['enabled'] is True:
+                                for metric in data['sql_metric']['list']:
+                                    
 
                             logging.info('Retrieved and logged data for server [{}]!'.format(serv.name), extra={'topic': 'CM'})
                     except pymysql.Error:

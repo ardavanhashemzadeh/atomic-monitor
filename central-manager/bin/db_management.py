@@ -141,6 +141,27 @@ def check_tables(logging, con, cur):
                     PRIMARY KEY(id));""".format(db_prefix))
 		logging.info('Checking {}_disk_iotable.'.format(db_prefix), extra={'topic': 'CM'})
 
+        # create/check SQL metrics table
+        cur.execute("""CREATE TABLE IF NOT EXISTS {}_sql_metric (
+                    id BIGINT NOT NULL AUTO_INCREMENT,
+                    server_id INTEGER NOT NULL,
+                    stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    status CHAR(1),
+                    bytes_sent BIGINT,
+                    bytes_received BIGINT,
+                    select_count INT,
+                    insert_count INT,
+                    update_count INT,
+                    delete_count INT,
+                    rollback_count INT,
+                    create_count INT,
+                    drop_count INT,
+                    alter_count INT,
+                    truncate_count INT,
+                    admin_cmd_count INT,
+                    PRIMARY KEY(id));""").format(db_prefix))
+		logging.info('Checking {}_sql_metric.'.format(db_prefix), extra={'topic': 'CM'})
+
         # submit changes to SQL server
         con.commit()
 		logging.info('Database prepared!', extra={'topic': 'CM'})
@@ -236,4 +257,14 @@ def insert_disk_io_data(logging, cur, con, server_id, status, io=None):
         con.commit()
     except pymysql.Error as ex:
         logging.error('Unable to insert [disk_io] data for server [{}] to SQL database! STACKTRACE: {}'
+            .format(server_name, ex.args[1]), extra={'topic': 'SQL'})
+
+# insert new SQL metric data to SQL database
+def insert_sql_metric_data(logging, cur, con, server_id, status, ???):
+    try:
+        cur.execute('INSERT INTO {}_sql_metric (server_id, status, ???) '
+                    'VALUES (?, ?, ???)'.format(db_prefix), server_id, status, ???)
+        con.commit()
+    except pymysql.Error as ex:
+        logging.error('Unable to insert [sql_metrics] data for server [{}] to SQL database! STACKTRACE: {}'
             .format(server_name, ex.args[1]), extra={'topic': 'SQL'})
