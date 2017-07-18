@@ -16,11 +16,11 @@ from bin.disk import Disk
 def convert_bytes(byts):
     try:
         if byts.endswith('kb'):
-            return byts[0:-2] * 1024
+            return int(byts[0:-2]) * 1024
         elif byts.endswith('mb'):
-            return byts[0:-2] * 1024 * 1024
+            return int(byts[0:-2]) * 1024 * 1024
         elif byts.endswith('gb'):
-            return byts[0:-2] * 1024 * 1024 * 1024
+            return int(byts[0:-2]) * 1024 * 1024 * 1024
         else:
             raise IOError('Invalid input. Correct format: #kb/#mb/#gb like 10gb or 5mb')
     except ValueError:
