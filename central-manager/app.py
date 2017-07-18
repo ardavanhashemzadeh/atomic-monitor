@@ -49,33 +49,36 @@ flsk_port = 0
 try:
     # log values
     err_type = 'Log > Name'
-    log_file = config.get('Log', 'Name')
+    log_file = config.get('Log', 'Name', fallback='agent.log')
     err_type = 'Log > Size_limit'
-    log_size_limit = config.get('Log', 'Size_limit')
+    log_size_limit = config.get('Log', 'Size_limit', fallback='5mb')
     log_size_limit = convert_bytes(log_size_limit)
-    err_type = 'Log > File_Number_Limit'
-    log_file_number_limit = config.getint('Log', 'File_Number_Limit')
+    err_type = 'Log > File_Limit'
+    log_file_number_limit = config.getint('Log', 'File_Limit', fallback=10)
 
     # database values
     err_type = 'Storage > Host'
-    db_host = config.get('Storage', 'Host')
+    db_host = config.get('Storage', 'Host', fallback='localhost')
     err_type = 'Storage > Port'
-    db_port = config.get('Storage', 'Port')
+    db_port = config.getint('Storage', 'Port', fallback=3306)
     err_type = 'Storage > User'
-    db_user = config.get('Storage', 'User')
+    db_user = config.get('Storage', 'User', fallback='root')
     err_type = 'Storage > Password'
-    db_pass = config.get('Storage', 'Pass')
+    db_pass = config.get('Storage', 'Pass', fallback='password')
     err_type = 'Storage > Database'
-    db_name = config.get('Storage', 'Database')
+    db_name = config.get('Storage', 'Database', fallback='agent')
     err_type = 'Storage > Prefix'
-    db_prefix = config.get('Storage', 'Prefix')
+    db_prefix = config.get('Storage', 'Prefix', fallback='am')
 
     # collector
-    interval_time = config.getint('Collector', 'Interval')
+    err_type = 'Collector > Interval'
+    interval_time = config.getint('Collector', 'Interval', fallback=1)
 
     # flask connection info
-    flsk_host = config.get('UI_Feeder', 'Host')
-    flsk_port = config.getint('UI_Feeder', 'Port')
+    err_type = 'UI_Feeder > Host'
+    flsk_host = config.get('UI_Feeder', 'Host', fallback='0.0.0.0')
+    err_type = 'UI_Feeder > Port'
+    flsk_port = config.getint('UI_Feeder', 'Port', fallback=5001)
 except IOError as e:
     print('CONFIG ERROR: Unable to load values from \"{}\"! STACKTRACE: {}'.format(err_type, e.args[1]))
     print('CONFIG ERROR: Force closing program...')
