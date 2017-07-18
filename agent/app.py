@@ -39,18 +39,18 @@ flsk_port = 0
 try:
     # log values
     err_type = 'Log > Name'
-    log_file = config.get('Log', 'Name')
+    log_file = config.get('Log', 'Name', fallback='agent.log')
     err_type = 'Log > Size_limit'
-    log_size_limit = config.get('Log', 'Size_limit')
+    log_size_limit = config.get('Log', 'Size_limit', fallback='5mb')
     log_size_limit = convert_bytes(log_size_limit)
-    err_type = 'Log > File_Number_Limit'
-    log_file_number_limit = config.getint('Log', 'File_Number_Limit')
+    err_type = 'Log > File_Limit'
+    log_file_number_limit = config.getint('Log', 'File_Limit', fallback=10)
 
     # flask values
     err_type = 'Flask > Host'
-    flsk_host = config.get('Flask', 'Host')
+    flsk_host = config.get('Flask', 'Host', fallback='0.0.0.0')
     err_type = 'Flask > Port'
-    flsk_port = config.getint('Flask', 'Port')
+    flsk_port = config.getint('Flask', 'Port', fallback=5000)
 except IOError as e:
     print('CONFIG ERROR: Unable to load values from \"{}\"! STACKTRACE: {}'.format(err_type, e.args[1]))
     print('CONFIG ERROR: Force closing program...')
