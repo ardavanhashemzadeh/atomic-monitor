@@ -1,56 +1,60 @@
+from threading import Thread
 import psutil
 import time
 
 
-def mb_convert(byts):
+nics = list()
+
+
+# convert bytes to megabytes
+def bytes_to_mb(byts):
     return byts / 1024 / 1024
 
 
-class Network:
-    # get # of bytes sent & received
-    def get_bytes_status(self):
-        nics = list()
+# loop every second to update records
+def update_nics():
+    global nics
+    while True:
+        old_nics = nics
+        new_nics = list()
 
-        # get list of before sent/recv bytes from each NIC
-        nic_names = list()
-        before_list = list()
+        # get current status
         nic_list = psutil.net_io_counters(pernic=True)
         for net in nic_list.keys():
-            nic_names.append(net)
-            before_list.append(NIC_IO(nic_list[net].bytes_sent, nic_list[net].bytes_recv))
+            new_nics.append(NIC(net, nic_list[net].bytes_sent, nic_list[net].bytes_recv))
 
-        # wait between updates
+        # do math to get change in 1 second difference
+        nics = list()
+        for i in range(0, len(old_nics)):
+            diff_sent = bytes_to_mb(old_nics[i].get_sent() - new_nics[i].get_sent())
+            diff_recv = bytes_to_mb(old_nics[i].get_recv() - new_nics[i].get_recv())
+
+            nics.append(NIC(old_nics[i].get_name(),
+                            diff_sent,
+                            diff_recv))
+
         time.sleep(1)
 
-        # get list of after sent/recv bytes from each NIC
-        after_list = list()
+
+class Network:
+    def __init__(self):
+        global nics
+        # initial list
         nic_list = psutil.net_io_counters(pernic=True)
         for net in nic_list.keys():
-            after_list.append(NIC_IO(nic_list[net].bytes_sent, nic_list[net].bytes_recv))
+            nics.append(NIC(net, nic_list[net].bytes_sent, nic_list[net].bytes_recv))
 
-        # do math to get difference in sent/recv
-        for i in range(0, len(before_list)):
-            sent = mb_convert(after_list[i].sent - before_list[i].sent)
-            recv = mb_convert(after_list[i].recv - before_list[i].recv)
+        # start thread process
+        thd = Thread(target=update_nics)
+        thd.daemon = True
+        thd.start()
 
-            nics.append(NIC(nic_names[i], sent, recv))
+    # retrieve NICs update
+    def get_nic_status(self):
+        global nics
 
         # NICs w/ num bytes sent/received
         return nics
-
-
-class NIC_IO:
-    def __init__(self, _sent, _recv):
-        self.sent = _sent
-        self.recv = _recv
-
-    # num of bytes sent
-    def get_sent(self):
-        return self.sent
-
-    # num of bytes received
-    def get_recv(self):
-        return self.recv
 
 
 class NIC:
