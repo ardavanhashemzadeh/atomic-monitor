@@ -95,14 +95,14 @@ nav ul li a h6 {
 
 /* status */
 div#body section#status {
-	padding: 20px;
+	padding: 10px;
 	text-align: left;
 }
 div#body section#status div.status-box {
 	display: inline-block;
 	width: 250px;
 	height: 100px;
-	margin: 0 20px 0 0;
+	margin: 10px;
 	position: relative;
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
@@ -152,7 +152,7 @@ div#body section#servers a.server-box {
 	vertical-align: top;
 	text-decoration: none;
 	width: 300px;
-	height: 135px;
+	height: 150px;
 	margin: 10px;
 	background-color: #424242;
 	color: #fff;
@@ -172,6 +172,7 @@ div#body section#servers a.server-box div.bar {
 	left: 0;
 	bottom: 0;
 	width: 8px;
+	z-index: 1;
 }
 div#body section#servers a.server-box h2 {
 	margin: 0;
@@ -182,40 +183,20 @@ div#body section#servers a.server-box h2 {
 	position: inline-block;
 }
 div#body section#servers a.server-box h2 span {
-	padding-right: 8px;
+	padding-left: 8px;
 	position: inline-block;
 	width: 30px;
 	text-align: center;
 	font-size: 0.8em;
-	opacity: 0.9;
-	position: relative;
-	top: -2px;
+	opacity: 0.8;
 }
 div#body section#servers a.server-box h3 {
 	margin: 0;
-	padding: 0 0 15px 20px;
+	padding: 0 0 12px 20px;
 	font-family: 'Roboto', sans-serif;
 	font-weight: 400;
 	font-size: 0.8em;
 	opacity: 0.8;
-}
-div#body section#servers a.server-box div.first-row {
-	text-align: center;
-}
-div#body section#servers a.server-box div.first-row div {
-	display: inline-block;
-	margin: 0 7px;
-	position: relative;
-}
-div#body section#servers a.server-box div.first-row div span {
-	position: absolute;
-	bottom: -3px;
-	left: 0;
-	right: 0;
-	text-align: center;
-	font-family: 'Roboto', sans-serif;
-	font-weight: 400;
-	font-size: 0.7em;
 }
 div#body section#servers a.server-box div.ping {
 	position: absolute;
@@ -225,7 +206,207 @@ div#body section#servers a.server-box div.ping {
 	font-weight: 400;
 	font-size: 1em;
 }
+div#body section#servers a.server-box div.gages {
+	text-align: center;
+}
+div#body section#servers a.server-box div.gages div {
+	display: inline-block;
+	margin: 0 7px;
+	position: relative;
+}
+div#body section#servers a.server-box div.gages div span {
+	position: absolute;
+	bottom: -3px;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.7em;
+}
+div#body section#servers a.server-box div.disks {
+	height: 25px;
+	background-color: rgba(0,0,0,0.2);
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+div#body section#servers a.server-box div.disks p {
+	margin: 0;
+	padding: 0;
+	height: 25px;
+	text-align: left;
+	line-height: 25px;
+	text-indent: 16px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.8em;
+}
+
+
+/* graphs */
+div#body section#graphs-menu {
+	padding: 10px;
+	text-align: left;
+	overflow: hidden;
+}
+div#body section#graphs-menu h2 {
+	margin: 0;
+	padding: 10px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 2em;
+	color: #fff;
+	float: left;
+}
+div#body section#graphs-menu h2 span {
+	display: inline-block;
+	padding: 3px 8px;
+	border-radius: 5px;
+	font-size: 0.5em;
+	position: relative;
+	top: -5px;
+	margin-left: 5px;
+}
+div#body section#graphs-menu div.menu {
+	float: right;
+	height: 58px;
+	line-height: 58px;
+	padding-right: 10px;
+}
+div#body section#graphs-menu div.menu select {
+	display: inline-block;
+	padding: 8px 0 7px 8px;
+	background-color: #424242;
+	color: #fff;
+	border: none;
+	width: 230px;
+	text-align: center;
+}
+div#body section#graphs-menu div.menu select:hover {
+	cursor: pointer;
+}
+div#body section#graphs {
+	padding: 0px 20px 20px 20px;
+	text-align: left;
+}
+div#body section#graphs div.menu {
+	overflow: hidden;
+	background-color: #131313;
+}
+div#body section#graphs div.menu button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 10px 0;
+	width: 180px;
+	transition: 0.3s;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 1em;
+}
+div#body section#graphs div.menu button:hover {
+	background-color: #353535;
+}
+div#body section#graphs div.menu button.active {
+	background-color: #353535;
+}
+div#body section#graphs div#contents {
+	padding-top: 10px;
+}
+div#body section#graphs div#contents div.graph-section {
+	display: none;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph {
+	width: 49%;
+	margin: 5px;
+	background-color: #424242;
+	display: inline-block;
+	vertical-align: top;
+	height: 200px;
+	overflow: hidden;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage {
+	width: 180px;
+	float: left;
+	margin-right: 10px;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage h3 {
+	margin: 0;
+	padding: 10px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 0.9em;
+	color: #fff;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage div {
+	width: 105px;
+	margin: 0 auto;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage div.gage-box {
+	width: 160px;
+	position: relative;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage div.gage-box span {
+	position: absolute;
+	bottom: -20px;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.9em;
+	color: #fff;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-chart {
+	float: left;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-chart h3 {
+	margin: 0;
+	padding: 10px 0 0 10px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 0.9em;
+	color: #fff;
+}
+div#body section#graphs div#contents div.graph-section div.content-graph div.graph-chart div {
+	height: 180px;
+	width: 400px;
+}
+
+.ct-chart-donut .ct-series-a .ct-area, .ct-series-a .ct-slice-donut-solid, .ct-series-a .ct-slice-pie {
+	fill: #4CAF50;
+}
+.ct-chart-donut .ct-series-a .ct-area, .ct-series-b .ct-slice-donut-solid, .ct-series-b .ct-slice-pie {
+	fill: #222;
+}
 
 
 
 
+.ct-series-a .ct-line {
+	stroke-width: 2px;
+}
+.ct-series-a .ct-point {
+  	stroke-width: 5px;
+}
+.ct-label {
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	position: relative;
+	left: -13px;
+}
+.ct-grid {
+	stroke: rgba(255,255,255,0.4);
+	stroke-dasharray: 0;
+}
+.ct-label .ct-vertical .ct-start {
+	display: none;
+}

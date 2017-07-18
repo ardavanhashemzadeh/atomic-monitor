@@ -149,33 +149,135 @@ function convert_uptime(boot_time) {
 	});
 });*/
 
+Pace.start();
 $('.gage').knob({
 	width: '60',
 	height: '50',
-	fgColor: '#4CAF50',
 	inputColor: 'white',
 	bgColor: '#212121',
 	angleOffset: '-125',
 	angleArc: '250',
 	readOnly: 'true',
+	font: 'sans-serif',
 	min: 0,
 	max: 100,
-	format: function(value) {
-		return value + '%';
-	},
 	font: 'sans-serif'
+});
+$('.gage').each(function() {
+	var value = $(this).val().slice(0, -1);
+	if(value >= 70 && value < 90) {
+		$(this).trigger('configure', { 'fgColor': '#F57C00' });
+	}
+	else if(value >= 90) {
+		$(this).trigger('configure', { 'fgColor': '#E53935' });
+	}
+	else {
+		$(this).trigger('configure', { 'fgColor': '#4CAF50' });
+	}
 });
 
 $('.gage2').knob({
 	width: '60',
 	height: '50',
-	fgColor: '#4CAF50',
 	inputColor: 'white',
 	bgColor: '#212121',
 	angleOffset: '-125',
 	angleArc: '250',
 	readOnly: 'true',
+	font: 'sans-serif',
 	min: 0,
-	max: 100,
-	font: 'sans-serif'
+	max: 1
+});
+$('.gage2').each(function() {
+	var value = $(this).val();
+	if(value >= 0.7 && value < 0.9) {
+		$(this).trigger('configure', { 'fgColor': '#F57C00' });
+	}
+	else if(value >= 0.9) {
+		$(this).trigger('configure', { 'fgColor': '#E53935' });
+	}
+	else {
+		$(this).trigger('configure', { 'fgColor': '#4CAF50' });
+	}
+});
+Pace.stop();
+
+$('#graph-server').change(function() {
+	console.log('TODO');
+});
+
+function changeSection(id, section) {
+	var i, tabcontent, tablinks;
+	$('.graph-section').each(function() {
+		$(this).css('display', 'none');
+	})
+
+	$('.tab').each(function() {
+		$(this).removeClass('active');
+	})
+
+	$('#' + section).css('display', 'block');
+	$('#' + id).addClass('active');
+}
+
+$('.gage3').knob({
+	width: '110',
+	height: '70',
+	inputColor: 'white',
+	bgColor: '#212121',
+	angleOffset: '-125',
+	angleArc: '250',
+	readOnly: 'true',
+	font: 'sans-serif',
+	min: 0,
+	max: 100
+});
+$('.gage3').each(function() {
+	var value = $(this).val().slice(0, -1);
+	if(value >= 70 && value < 90) {
+		$(this).trigger('configure', { 'fgColor': '#F57C00' });
+	}
+	else if(value >= 90) {
+		$(this).trigger('configure', { 'fgColor': '#E53935' });
+	}
+	else {
+		$(this).trigger('configure', { 'fgColor': '#4CAF50' });
+	}
+});
+
+
+
+
+
+
+new Chartist.Pie('#cpu-gage', {
+  	series: [30, 70]
+}, {
+  total: 100,
+  donut: true,
+  donutWidth: 6,
+  donutSolid: true,
+  startAngle: 0,
+  showLabel: false
+});
+
+new Chartist.Line('#cpu-chart', {
+	labels: ['9:00', '9:30', '10:00', '10:30', '11:00'],
+	series: [
+		[10, 5, 30, 45, 25]
+	]
+}, 
+{
+	high: 100,
+	low: 0,
+	fullWidth: true,
+	showArea: true,
+	axisY: {
+		showGrid: true,
+		showLabel: false,
+		offset: 0
+	},
+	axisX: {
+		showGrid: false
+	}
 });

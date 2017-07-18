@@ -7,6 +7,7 @@
         <meta name='viewport' content='width=device-width' />
         <link rel='shortcut icon' href='favicon.ico' type='image/x-icon' />
 		<link type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet'>
+        <link type='text/css' href='assets/css/pace-theme-minimal.tmpl.css' rel='stylesheet'>
         <link type='text/css' href='assets/css/main.css' rel='stylesheet'>
         <title>Atomic Monitor System</title>
     </head>
@@ -14,11 +15,11 @@
 		<nav>
 			<img src='assets/img/logo.png' title='Atomic Monitor System' />
 			<ul>
-				<li><a href='#'>
+				<li><a href='index.html'>
 					<div><i class="fa fa-home" aria-hidden="true"></i></div>
 					<h6>Home</h6>
 				</a></li>
-				<li><a href='#'>
+				<li><a href='graphs.html'>
 					<div><i class="fa fa-line-chart" aria-hidden="true"></i></div>
 					<h6>Graphs</h6>
 				</a></li>
@@ -37,12 +38,12 @@
 				<div class='status-box bad'>
 					<h2>1</h2>
 					<h4>Down servers</h4>
-					<h5>Servers Total: 15</h5>
+					<h5>Database #1</h5>
 				</div>
 				<div class='status-box warn'>
 					<h2>3</h2>
 					<h4>Servers with warnings</h4>
-					<h5>Servers Total: 15</h5>
+					<h5>UbuntuS-MAIN, UbuntuS-DB, Firewall</h5>
 				</div>
 				<div class='status-box good'>
 					<h2>10</h2>
@@ -52,163 +53,47 @@
 				<div class='status-box disabled'>
 					<h2>1</h2>
 					<h4>Servers disabled</h4>
-					<h5>Servers Total: 15</h5>
+					<h5>UbuntuS-PU</h5>
 				</div>
 				<div class='status-box tofix'>
 					<h2>0</h2>
 					<h4>Servers in maintenance</h4>
-					<h5>Servers Total: 15</h5>
+					<h5>N/A</h5>
 				</div>
 			</section>
 			<section id='servers'>
 				<a class='server-box' href='#'>
 					<div class='bar good'></div>
-					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>General Server</h2>
+					<h2>Adam's Cloud<span><i class="fa fa-server" aria-hidden="true"></i></span></h2>
 					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
+					<div id='server1-ping' class='ping text-good'>20 ms</div>
+					<div class='gages'>
 						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
 						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
+						<div class='gage-box'><input id='server1-io' type='text' data-step="0.1" value='0.1' class='gage2'><span>I/O</span></div>
 					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
+					<div class='disks'>
+						<p>Disks: <span class='text-good'>Good</span></p>
+					</div>
 				</a>
 				<a class='server-box' href='#'>
 					<div class='bar good'></div>
-					<h2><span><i class="fa fa-database" aria-hidden="true"></i></span>Database Server</h2>
+					<h2>Database #1<span><i class="fa fa-database" aria-hidden="true"></i></span></h2>
 					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
 					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-envelope" aria-hidden="true"></i></span>Email Server</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
+					<div class='gages'>
+						<div class='gage-box'><input id='server1-cpu' type='text' value='30' class='gage'><span>CPU</span></div>
+						<div class='gage-box'><input id='server1-ram' type='text' value='1' class='gage'><span>RAM</span></div>
+						<div class='gage-box'><input id='server1-io' type='text' data-step="0.1" value='0.9' class='gage2'><span>I/O</span></div>
 					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-internet-explorer" aria-hidden="true"></i></span>Website Server</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
+					<div class='disks'>
+						<p>Disks: <span class='text-warn'>Device '/' at 80% full</span></p>
 					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-fire" aria-hidden="true"></i></span>Firewall Server</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-users" aria-hidden="true"></i></span>AD Server</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-desktop" aria-hidden="true"></i></span>VM/Hypervisor Serv.</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-folder" aria-hidden="true"></i></span>File Sharing Serv.</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar good'></div>
-					<h2><span><i class="fa fa-lock" aria-hidden="true"></i></span>Security Server</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
-				</a>
-				
-				
-				<a class='server-box' href='#'>
-					<div class='bar warn'></div>
-					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>General Server</h2>
-					<h3>1 day 2 hrs 3 min</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='1.47' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-warn'>120 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar bad'></div>
-					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>General Server</h2>
-					<h3>offline</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='0' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='0' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='0' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-disabled'>0 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar disabled'></div>
-					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>General Server</h2>
-					<h3>disabled</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='0' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='0' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='0' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-disabled'>0 ms</div>
-				</a>
-				<a class='server-box' href='#'>
-					<div class='bar tofix'></div>
-					<h2><span><i class="fa fa-server" aria-hidden="true"></i></span>General Server</h2>
-					<h3>under maintenance</h3>
-					<div class='first-row'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='0' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='0' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-io' type='text' value='0' class='gage2'><span>I/O</span></div>
-					</div>
-					<div id='server1-ping' class='ping text-disabled'>0 ms</div>
 				</a>
 			</section>
 			<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
 			<script src='https://cdnjs.cloudflare.com/ajax/libs/jQuery-Knob/1.2.13/jquery.knob.min.js'></script>
+			<script src='assets/js/pace.min.js'></script>
 			<script src='assets/js/main.js'></script>
 		</div>
 	</body>
