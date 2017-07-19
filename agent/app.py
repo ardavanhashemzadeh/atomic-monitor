@@ -94,7 +94,7 @@ app = Flask(__name__)
 
 
 # display system hardware specs
-@app.route('/hw-specs')
+@app.route('/specs')
 def web_specs():
     # retrieve current system hardware specs
     operating_system = platform.platform()
@@ -122,7 +122,7 @@ def web_specs():
 @app.route('/now')
 def web_now():
     # retrieve current system specs
-    ram_percent, ram_used, ram_total = sram.get_memory_usage()
+    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = sram.get_memory_usage()
     cpu_percent = scpu.get_usage()
     boot_time = boot.get_boot_time()
     disks = sdisk.get_disks()
@@ -138,15 +138,24 @@ def web_now():
     json_data = {
         'version': 'v{}'.format(VERSION),
         'ram': {
-            'percent_used': ram_percent,
+            'percent': ram_perc,
             'used': ram_used,
-            'total': ram_total
+            'active': ram_active,
+            'inactive': ram_inactive,
+            'buffers': ram_buffers,
+            'cached': ram_cached,
+            'shared': ram_shared,
+            'total': ram_total,
+
         },
+        'swap': {
+            'percent': swap_percent
+        }
         'cpu': {
-            'percent_used': cpu_percent
+            'percent': cpu_percent
         },
         'boot': {
-            'start_timestamp': boot_time
+            'timestamp': boot_time
         },
         'disks': [
             {
@@ -167,12 +176,12 @@ def web_now():
 
 
 # display full system specs
-@app.route('/')
+@app.route('/all')
 def web_all():
     # retrieve current system specs
-    ram_percent, ram_used, ram_total = sram.get_memory_usage()
+    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = sram.get_memory_usage()
     swap_percent, swap_used, swap_total = sram.get_swap_usage()
-    cpu_usage = scpu.get_usage()
+    cpu_percent = scpu.get_usage()
     nics_bytes = net.get_nic_status()
     nic_names, nic_sent, nic_recvs = [], [], []
     for nic in nics_bytes:
@@ -192,18 +201,24 @@ def web_all():
         'version': 'v{}'.format(VERSION),
         'memory': {
             'ram': {
-                'percent_used': ram_percent,
+                'percent': ram_percent,
                 'used': ram_used,
-                'total': ram_total
+                'active': ram_active,
+                'inactive': ram_inactive,
+                'buffers': ram_buffers,
+                'cached': ram_cached,
+                'shared': ram_shared,
+                'total': ram_total,
+
             },
             'swap': {
-                'percent_used': swap_percent,
+                'percent': swap_percent,
                 'used': swap_used,
                 'total': swap_total
             }
         },
         'cpu': {
-            'percent_used': cpu_usage
+            'percent': cpu_percent
         },
         'network': [
             {
@@ -219,9 +234,7 @@ def web_all():
             '15min': load_15m
         },
         'boot': {
-            'time': {
-                'timestamp': boot_time
-            }
+            'timestamp': boot_time
         },
         'disk_io': disk_io
     }
