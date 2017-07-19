@@ -160,7 +160,7 @@ def web_now():
         'disks': [
             {
                 'name': name,
-                'percent_used': percent,
+                'percent': percent,
                 'used': used,
                 'total': total
             }
@@ -193,7 +193,6 @@ def web_all():
         load_1m = 'NULL'
         load_5m = 'NULL'
         load_15m = 'NULL'
-    boot_time = boot.get_boot_time()
     disk_io = sdisk.get_disk_io()
 
     # create json object
@@ -223,8 +222,8 @@ def web_all():
         'network': [
             {
                 'name': name,
-                'mb_sent': sent,
-                'mb_recieved': recv
+                'sent': sent,
+                'recieved': recv
             }
             for name, sent, recv in zip(nic_names, nic_sent, nic_recvs)
         ],
@@ -232,9 +231,6 @@ def web_all():
             '1min': load_1m,
             '5min': load_5m,
             '15min': load_15m
-        },
-        'boot': {
-            'timestamp': boot_time
         },
         'disk_io': disk_io
     }
