@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset='utf-8'>
+        <meta name='author' content='Atomicbeast101 @ github.com/atomicbeast101'>
+        <meta name='description' content='Atomic Monitor System'>
+        <meta name='viewport' content='width=device-width' />
+        <link rel='shortcut icon' href='favicon.ico' type='image/x-icon' />
+		<link type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet'>
+        <link type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.css' rel='stylesheet'>
+        <link type='text/css' href='assets/css/pace-theme-minimal.tmpl.css' rel='stylesheet'>
+        <link type='text/css' href='assets/css/main.css' rel='stylesheet'>
+        <title>Atomic Monitor | UbuntuS-MAIN</title>
+    </head>
+    <body>
+		<nav>
+			<img src='assets/img/logo.png' title='Atomic Monitor System' />
+			<ul>
+				<li><a href='index.html'>
+					<div><i class="fa fa-home" aria-hidden="true"></i></div>
+					<h6>Home</h6>
+				</a></li>
+				<li><a href='servers.html'>
+					<div><i class="fa fa-server" aria-hidden="true"></i></div>
+					<h6>Servers</h6>
+				</a></li>
+				<li><a href='#'>
+					<div><i class="fa fa-bell" aria-hidden="true"></i></div>
+					<h6>Alerts</h6>
+				</a></li>
+				<li><a href='#'>
+					<div><i class="fa fa-user" aria-hidden="true"></i></div>
+					<h6>Admin</h6>
+				</a></li>
+			</ul>
+		</nav>
+		<div id='body'>
+			<section id='graphs-menu'>
+                <h2 class='title'>UbuntuS-MAIN <span class='good'>Up</span></h2>
+				<div class='menu'>
+                    <select id='graph-server'>
+                        <option>UbuntuS-MAIN</option>
+                        <option>UbuntuS-DB</option>
+                        <option>UbuntuS-MM</option>
+                    </select>
+                </div>
+			</section>
+			<section id='graphs'>
+				<div class='menu'>
+                    <button id='general-tab' class='tab active' onclick='changeSection("general-tab", "general")'>General</button>
+                    <button id='alerts-tab' class='tab' onclick='changeSection("alerts-tab", "alerts")'>Alerts</button>
+                </div>
+                <div id='contents'>
+                    <div id='general' class='graph-section' style='display: block'>
+                        <div id='graphs-col'>
+                            <div id='cpu-graph' class='content-graph'>
+                                <div class='graph-gage'>
+                                    <h3>Current CPU Usage (%)</h3>
+                                    <div id='cpu-gage'><span class='text-good'>30%</span></div>
+                                </div>
+                                <div class='graph-chart'>
+                                    <h3>CPU History (%)</h3>
+                                    <div id='cpu-chart'></div>
+                                </div>
+                            </div>
+                            <div id='ram-graph' class='content-graph'>
+                                <div class='graph-gage'>
+                                    <h3>Current RAM Usage (%)</h3>
+                                    <div id='ram-gage'><span class='text-bad'>91%</span></div>
+                                </div>
+                                <div class='graph-chart'>
+                                    <h3>RAM History (%)</h3>
+                                    <div id='ram-chart'></div>
+                                </div>
+                            </div>
+                            <div id='swap-graph' class='content-graph'>
+                                <div class='graph-gage'>
+                                    <h3>Current Swap Usage (%)</h3>
+                                    <div id='swap-gage'><span class='text-warn'>75%</span></div>
+                                </div>
+                                <div class='graph-chart'>
+                                    <h3>Swap History (%)</h3>
+                                    <div id='swap-chart'></div>
+                                </div>
+                            </div>
+                            <div id='load-graph' class='content-graph'>
+                                <div class='graph-chart' style='padding: 0'>
+                                    <h3>Load History</h3>
+                                    <div id='load-chart'></div>
+                                </div>
+                            </div>
+                            <div id='ping-graph' class='content-graph'>
+                                <div class='graph-chart' style='padding: 0'>
+                                    <h3>Ping (ms)</h3>
+                                    <div id='ping-chart'></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id='specs-col'>
+                            <div id='netdown-graph' class='content-graph'>
+                                <div class='graph-chart'>
+                                    <h3>Download History (in MB)</h3>
+                                    <div id='netdown-chart'></div>
+                                </div>
+                            </div>
+                            <div id='netup-graph' class='content-graph'>
+                                <div class='graph-chart'>
+                                    <h3>Upload History (in MB)</h3>
+                                    <div id='netup-chart'></div>
+                                </div>
+                            </div>
+                            <div id='disk-specs' class='content-table'> 
+                                <h3>Disks</h3>
+                                <table>
+                                    <tr>
+                                        <td class='device'>/</td>
+                                        <td><div class='progress-bar'><span class='good' style='width: 33%'></span></div></td>
+                                    </tr>
+                                    <tr>
+                                        <td class='device'>/var/www</td>
+                                        <td><div class='progress-bar'><span class='bad' style='width: 96%'></span></div></td>
+                                    </tr>
+                                    <tr>
+                                        <td class='device'>/data-storage</td>
+                                        <td><div class='progress-bar'><span class='warn' style='width: 71%'></span></div></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div id='system-specs' class='content-table'> 
+                                <h3>System Specifications</h3>
+                                <table>
+                                    <tr>
+                                        <td>Hostname</td>
+                                        <td class='info'>UbuntuS-MAIN</td>
+                                    </tr>
+                                    <tr>
+                                        <td>IP</td>
+                                        <td class='info'>10.0.0.1</td>
+                                    </tr>
+                                    <tr>
+                                        <td>MAC</td>
+                                        <td class='info'>FF:FF:FF:FF:FF:FF</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Availability</td>
+                                        <td class='info'>98%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>OS</td>
+                                        <td class='info'>Ubuntu Server 17.04</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CPU Brand</td>
+                                        <td class='info'>AMD FX 8200</td>
+                                    </tr>
+                                    <tr>
+                                        <td>CPU Speed</td>
+                                        <td class='info'>3 cores @ 3.9 GHz</td>
+                                    </tr>
+                                    <tr>
+                                        <td>RAM</td>
+                                        <td class='info'>16GB</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Uptime</td>
+                                        <td class='info'>4 days, 2:23:44</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Load</td>
+                                        <td class='info'>
+                                            <span class='text-good'>0.08</span>
+                                            <span class='text-warn'>0.89</span>
+                                            <span class='text-bad'>0.95</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id='alerts' class='graph-section'>
+                        <div id='alerts-menu'>
+                            <h3>Filter Options</h3>
+                            <form>
+                                <label>Filter logs by alert level:</label>
+                                <select name='alertFilterLevel'>
+                                    <option>All</option>
+                                    <option>Warning</option>
+                                    <option>Error</option>
+                                </select>
+                                <label>Select server to retrieve errors for:</label>
+                                <select name='alertServer'>
+                                    <option>UbuntuS-MAIN</option>
+                                    <option>UbuntuS-DB</option>
+                                    <option>UbuntuS-MM</option>
+                                </select>
+                                <label># of error logs to view:</label>
+                                <select name='alertNumLogs'>
+                                    <option>25</option>
+                                    <option>50</option>
+                                    <option>100</option>
+                                    <option>200</option>
+                                </select>
+                                <label>Keywords to search for:</label>
+                                <input type='text' name='alertKeywordKeep' />
+                                <label>Keywords to filter out:</label>
+                                <input type='text' name='alertKeywordRemove' />
+                                <button onclick=''>Submit</button>
+                            </form>
+                        </div>
+                        <div id='alerts-log'>
+
+                        </div>
+                    </div>
+                </div>
+			</section>
+			<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+			<script src='https://cdnjs.cloudflare.com/ajax/libs/jQuery-Knob/1.2.13/jquery.knob.min.js'></script>
+            <script src='https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.js'></script>
+            <script src='assets/js/pace.min.js'></script>
+			<script src='assets/js/main.js'></script>
+		</div>
+	</body>
+</html>

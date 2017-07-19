@@ -318,42 +318,64 @@ div#body section#graphs div.menu button.active {
 div#body section#graphs div#contents {
 	padding-top: 10px;
 }
-div#body section#graphs div#contents div.graph-section {
-	display: none;
+div#body section#graphs div#contents div#general {
+	text-align: center;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph {
-	width: 49%;
-	margin: 5px;
-	background-color: #424242;
+div#body section#graphs div#contents div#general div#graphs-col {
 	display: inline-block;
+	max-width: 900px;
+	width: 100%;
 	vertical-align: top;
+	margin: 0 8px;
+}
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph {
+	width: 100%;
+	margin: 10px 10px 20px 10px;
+	background-color: #424242;
+	display: block;
 	height: 200px;
-	overflow: hidden;
+	position: relative;
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage {
 	width: 180px;
-	float: left;
-	margin-right: 10px;
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage h3 {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage h3 {
 	margin: 0;
-	padding: 10px;
+	text-align: left;
+	padding: 10px 10px 10px 12px;
 	font-family: 'Roboto', sans-serif;
 	font-weight: 300;
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage div {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div {
 	width: 105px;
 	margin: 0 auto;
+	position: relative;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage div.gage-box {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div span {
+	position: absolute;
+	top: 41.5%;
+	left: 29%;
+	display: block;
+	width: 50px;
+	height: 20px;
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 1.2em;
+}
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div.gage-box {
 	width: 160px;
 	position: relative;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-gage div.gage-box span {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div.gage-box span {
 	position: absolute;
 	bottom: -20px;
 	left: 0;
@@ -364,25 +386,177 @@ div#body section#graphs div#contents div.graph-section div.content-graph div.gra
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-chart {
-	float: left;
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-chart {
+	padding-left: 180px;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-chart h3 {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-chart h3 {
 	margin: 0;
-	padding: 10px 0 0 10px;
+	text-align: left;
+	padding: 10px 0 0 12px;
 	font-family: 'Roboto', sans-serif;
 	font-weight: 300;
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div.graph-section div.content-graph div.graph-chart div {
+div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-chart div {
 	height: 180px;
-	width: 400px;
+	padding: 0 10px;
+}
+div#body section#graphs div#contents div#general div#specs-col {
+	display: inline-block;
+	max-width: 550px;
+	width: 100%;
+	vertical-align: top;
+	margin: 0 8px;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph {
+	width: 100%;
+	margin: 10px 10px 20px 10px;
+	background-color: #424242;
+	display: block;
+	height: 200px;
+	position: relative;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage {
+	width: 180px;
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage h3 {
+	margin: 0;
+	text-align: left;
+	padding: 10px 10px 10px 12px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 0.9em;
+	color: #fff;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div {
+	width: 105px;
+	margin: 0 auto;
+	position: relative;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div span {
+	position: absolute;
+	top: 41.5%;
+	left: 29%;
+	display: block;
+	width: 50px;
+	height: 20px;
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 1.2em;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div.gage-box {
+	width: 160px;
+	position: relative;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div.gage-box span {
+	position: absolute;
+	bottom: -20px;
+	left: 0;
+	right: 0;
+	text-align: center;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 0.9em;
+	color: #fff;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-chart {
+	padding-left: 0;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-chart h3 {
+	margin: 0;
+	text-align: left;
+	padding: 10px 0 0 12px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 0.9em;
+	color: #fff;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-chart div {
+	height: 180px;
+	padding: 0 10px;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table {
+	max-width: 850px;
+	width: 100%;
+	margin: 0 10px 20px 10px;
+	background-color: #424242;
+	display: inline-block;
+	vertical-align: top;
+	position: relative;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table h3 {
+	margin: 0;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 0.9em;
+	padding: 10px 10px 9px 12px;
+	text-align: left;
+	border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table table {
+	width: 100%;
+	border-collapse: collapse;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table table td {
+	border: none;
+	border-top: 1px solid rgba(255,255,255,0.2);
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 0.9em;
+	color: #fff;
+	text-align: left;
+	padding: 6px 8px;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table table td.info {
+	font-weight: 400;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table table td.device {
+	width: 140px;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table table td div.progress-bar {
+	background-color: #222;
+	width: 100%;
+	height: 15px;
+	position: relative;
+}
+div#body section#graphs div#contents div#general div#specs-col div.content-table table td div.progress-bar span {
+	display: block;
+	position: absolute;
+	left: 0;
+	height: 100%;
 }
 
-.ct-chart-donut .ct-series-a .ct-area, .ct-series-a .ct-slice-donut-solid, .ct-series-a .ct-slice-pie {
-	fill: #4CAF50;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .ct-chart-donut .ct-series-a .ct-area, .ct-series-b .ct-slice-donut-solid, .ct-series-b .ct-slice-pie {
 	fill: #222;
 }
@@ -391,18 +565,38 @@ div#body section#graphs div#contents div.graph-section div.content-graph div.gra
 
 
 .ct-series-a .ct-line {
-	stroke-width: 2px;
+	stroke-width: 1.5px;
 }
-.ct-series-a .ct-point {
-  	stroke-width: 5px;
+.ct-series-b .ct-line {
+	stroke-width: 1.5px;
+}
+.ct-series-c .ct-line {
+	stroke-width: 1.5px;
+}
+.ct-series-d .ct-line {
+	stroke-width: 1.5px;
+}
+.ct-series-e .ct-line {
+	stroke-width: 1.5px;
+}
+.ct-series-f .ct-line {
+	stroke-width: 1.5px;
 }
 .ct-label {
 	color: #fff;
 	font-family: 'Roboto', sans-serif;
 	font-weight: 400;
 	position: relative;
-	left: -13px;
+	left: -15px;
+	top: 4px;
 }
+.ct-label.ct-vertical.ct-start {
+	position: relative;
+	top: 5px;
+	left: 3px;
+}
+
+
 .ct-grid {
 	stroke: rgba(255,255,255,0.4);
 	stroke-dasharray: 0;
