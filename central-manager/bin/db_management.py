@@ -149,6 +149,20 @@ def check_tables(logging, con, cur, db_prefix):
         raise pymysql.Error(e.args[1])
 
 
+# retrieve online % status from SQL database
+def get_online_percent(logging, cur, db_prefix, server_name, server_id):
+    try:
+        # retrieve data
+        online = cur.execute('SELECT COUNT(status) AS online FROM {}_ping WHERE status=1;').fetchone()[0]['online']
+        total = cur.execute('SELECT COUNT(status) AS total FROM {}_ping;').fetchone()[0]['total']
+
+        # return percentage of online status
+        return float(online) / float(total)
+    except pymysql.Error as ex:
+        logging.error('Unable to retrieve online percentage for server [{}] from SQL database! STACKTRACE: {}'
+                      .format(server_name, ex.args[1]), extra={'topic': 'SQL'})
+
+
 # insert new ping data to SQL database
 def insert_log_data(logging, cur, db_prefix, con, server_name, typ, message):
     try:

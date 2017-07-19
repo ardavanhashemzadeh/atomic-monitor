@@ -10,8 +10,7 @@ import pymysql
 import pexpect
 import json
 
-from bin.server_obj import Server
-from bin.errorlog_obj import ErrorLog
+from bin.objects_list import ErrorLog, Server, Disk
 import bin.db_management as db_management
 
 
@@ -147,38 +146,58 @@ def scrape_data(time):
                             data = json.loads(url.read().decode())
 
                             # insert data to SQL db
-                            db_management.insert_ping_data(serv.id, 1, ping_result)
+                            db_management.insert_ping_data(logging, cur, db_prefix, con, serv.name, serv.id, 1, ping_result)
                             if ping_result > 200:
                                 db_management.insert_log_data(logging, con, cur, serv.name, 0,
                                                               'Slow ping response: {} ms'.format(ping_result))
 
                             # insert ram data to SQL db
-                            db_management.insert_memory_data(logging, con, cur, serv.id, 1,
-                                                             data['memory']['ram']['percent_used'],
+                            db_management.insert_memory_data(logging, cur, db_prefix, con, serv.name, serv.id, 1,
+                                                             data['memory']['ram']['percent'],
                                                              data['memory']['ram']['used'],
+                                                             data['memory']['ram']['active'],
+                                                             data['memory']['ram']['inactive'],
+                                                             data['memory']['ram']['buffers'],
+                                                             data['memory']['ram']['cached'],
+                                                             data['memory']['ram']['shared'],
                                                              data['memory']['ram']['total'],
-                                                             data['memory']['swap']['percent_used'],
+                                                             data['memory']['swap']['percent'],
                                                              data['memory']['swap']['used'],
                                                              data['memory']['swap']['total'])
-                            if data['memory']['ram']['percent_used'] >= 90:
+                            
+                            # log if RAM/swap is 90% or above
+                            if data['memory']['ram']['percent'] >= 90:
                                 db_management.insert_log_data(logging, con, cur, serv.name, 0,
                                                               'High RAM usage: {}%'.format(
-                                                                  data['memory']['ram']['percent_used']))
+                                                                  data['memory']['ram']['percent']))
+                            if data['memory']['swap']['percent'] >= 90:
+                                db_management.insert_log_data(logging, con, cur, serv.name, 0,
+                                                              'High swap usage: {}%'.format(
+                                                                  data['memory']['swap']['percent']))
 
                             # insert CPU data to SQL db
-                            db_management.insert_cpu_data(logging, con, cur, serv.id, 1, data['cpu']['percent_used'])
-                            if data['cpu']['percent_used'] >= 90:
+                            db_management.insert_cpu_data(logging, cur, db_prefix, con, serv.name, serv.id, 1, 
+                                                          data['cpu']['percent'])
+
+                            # log if CPU is 90% or above
+                            if data['cpu']['percent'] >= 90:
                                 db_management.insert_log_data(logging, con, cur, serv.name, 0,
-                                                              'High CPU usage: {}%'.format(data['cpu']['percent_used']))
+                                                              'High CPU usage: {}%'.format(data['cpu']['percent']))
 
                             # insert network data to SQL db
                             for net_nic in data['network']:
-                                db_management.insert_net_data(logging, con, cur, serv.id, 1, net_nic['name'],
-                                                              net_nic['mb_sent'], net_nic['mb_received'])
+                                db_management.insert_net_data(logging, cur, db_prefix, con, serv.name, serv.id, 1, 
+                                                              net_nic['name'],
+                                                              net_nic['sent'], 
+                                                              net_nic['received'])
 
                             # insert load average data to SQL db
-                            db_management.insert_load_data(logging, con, cur, serv.id, 1, data['load']['1min'],
-                                                           data['load']['5min'], data['load']['15min'])
+                            db_management.insert_load_data(logging, cur, db_prefix, con, serv.name, serv.id, 1, 
+                                                           data['load']['1min'],
+                                                           data['load']['5min'], 
+                                                           data['load']['15min'])
+                            
+                            # log if load average is 1.00 or above
                             if data['load']['1min'] is not None:
                                 if data['load']['1min'] > 1.00:
                                     db_management.insert_log_data(logging, con, cur, serv.name, 0,
@@ -191,14 +210,14 @@ def scrape_data(time):
                                                                   'High 15m load usage: {}'.format(
                                                                       data['load']['15min']))
 
-                            # insert disk data to SQL db
-                            for disk in data['disks']['list']:
-                                db_management.insert_disk_data(logging, con, cur, serv.id, 1, disk['device'],
-                                                               disk['percent_used'], disk['used'], disk['total'])
-                                if disk['percent_used'] > 90:
-                                    db_management.insert_log_data(logging, con, cur, serv.name, 0,
-                                                                  'High disk space usage: {}%'.format(
-                                                                      disk['percent_used']))
+                            # insert disk io data to SQL db
+                            db_management.insert_disk_io_data(logging, cur, db_prefix, con, serv.name, serv.id, 1, 
+                                                              data['disk_io'])
+
+                            # log if disk I/O is 1.0 or above
+                            if data['disk_io'] >= 1.0:
+                                db_management.insert_log_data(logging, con, cur, serv.name, 0,
+                                                              'High disk I/O: {}'.format(data['disk_io']))
 
                             logging.info('Retrieved and logged data for server [{}]!'.format(serv.name),
                                          extra={'topic': 'CM'})
@@ -206,13 +225,13 @@ def scrape_data(time):
                         logging.error('Unable to access server [{}]! Please make sure the port is open on that '
                                       'server!'.format(serv.name), extra={'topic': 'AGENT'})
                 else:
-                    db_management.insert_ping_data(serv.id, 0)
-                    db_management.insert_memory_data(serv.id, 0)
-                    db_management.insert_cpu_data(serv.id, 0)
-                    db_management.insert_net_data(serv.id, 0)
-                    db_management.insert_load_data(serv.id, 0)
-                    db_management.insert_disk_data(serv.id, 0)
-                    db_management.insert_log_data(serv.name, 1, 'Server not responding to ping')
+                    db_management.insert_ping_data(logging, cur, db_prefix, con, serv.name, serv.id, 0)
+                    db_management.insert_memory_data(logging, cur, db_prefix, con, serv.name, serv.id, 0)
+                    db_management.insert_cpu_data(logging, cur, db_prefix, con, serv.name, serv.id, 0)
+                    db_management.insert_net_data(logging, cur, db_prefix, con, serv.name, serv.id, 0)
+                    db_management.insert_load_data(logging, cur, db_prefix, con, serv.name, serv.id, 0)
+                    db_management.insert_disk_io_data(logging, cur, db_prefix, con, serv.name, serv.id, 0)
+                    db_management.insert_log_data(logging, cur, db_prefix, con, serv.name, 1, 'Server not responding to ping')
                     logging.warning('Server [{}] is not responding, skipping...'.format(serv.name),
                                     extra={'topic': 'CM'})
         except pymysql.Error as ex:
@@ -233,18 +252,43 @@ def web_now_status(hostname, port):
             r = json.loads(url.read().decode())
 
             # get data
-            ram_percent = r['ram']['percent_used']
-            cpu_percent = r['cpu']['percent_used']
-            boot_time = r['boot']['start_timestamp']
+            available = db_management.get_online_percent(logging, cur, db_prefix, server_name, server_id)
+            ram_percent = r['ram']['percent']
+            swap_percent = r['swap']['percent']
+            cpu_percent = r['cpu']['percent']
+            boot_time = r['boot']['timestamp']
+            disks = list()
+            for disk in r['disks']:
+                disks.append(Disk(disk['name'],
+                                  disk['percent'],
+                                  disk['used'],
+                                  disk['total']))
+            disk_names, disk_percents, disk_useds, disk_totals = [], [], [], []
+            for disk in disks:
+                disk_names.append(disk.get_name())
+                disk_percents.append(disk.get_percent())
+                disk_useds.append(disk.get_used())
+                disk_totals.append(disk.get_total())
             disk_io = r['disk_io']
 
             # create json data
             json_data = {
                 'status': 'online',
+                'availability': available,
                 'ping': ping_result,
-                'ram_percent': ram_percent,
-                'cpu_percent': cpu_percent,
-                'boot_time': boot_time,
+                'ram': ram_percent,
+                'swap': swap_percent,
+                'cpu': cpu_percent,
+                'boot': boot_time,
+                'disks': [
+                    {
+                        'name': disk_name,
+                        'percent': disk_percent,
+                        'used': disk_used,
+                        'total': disk_total
+                    }
+                    for disk_name, disk_percent, disk_used, disk_total in zip(disk_names, disk_percents, disk_useds, disk_totals)
+                ],
                 'disk_io': disk_io
             }
 
