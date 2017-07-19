@@ -2,7 +2,10 @@
 from configparser import ConfigParser
 from flask import Flask, jsonify, request
 import logging.handlers
+import platform
+import cpuinfo
 import logging
+import psutil
 
 from bin.ram import RAM
 from bin.cpu import CPU
@@ -10,6 +13,10 @@ from bin.network import Network
 from bin.load_avg import LoadAvg
 from bin.boot_time import BootTime
 from bin.disk import Disk
+
+
+# version
+VERSION = '1.0'
 
 
 # convert human sizes to bytes
@@ -86,6 +93,31 @@ sdisk = Disk()
 app = Flask(__name__)
 
 
+# display system hardware specs
+@app.route('/hw-specs')
+def web_specs():
+    # retrieve current system hardware specs
+    operating_system = platform.platform()
+    cpu_brand = cpuinfo.get_cpu_info()['brand']
+    cpu_cores = '{} cores @ {}'.format(cpuinfo.get_cpu_info()['count'],
+                                       cpuinfo.get_cpu_info()['hz_advertised'])
+    total_ram = '{} GB'.format(psutil.virtual_memory().total / 1024 / 1024 / 1024)
+
+    # create json data
+    json_data = {
+        'version': 'v{}'.format(VERSION),
+        'os': operating_system,
+        'cpu_brand': cpu_brand,
+        'cpu_cores': cpu_cores,
+        'ram': total_ram
+    }
+
+    logging.info('Retrieved hardware specs for IP: {}'.format(request.remote_addr), extra={'topic': 'AGENT'})
+
+    # print json data
+    return jsonify(json_data)
+
+
 # display current specs
 @app.route('/now')
 def web_now():
@@ -93,10 +125,18 @@ def web_now():
     ram_percent, ram_used, ram_total = sram.get_memory_usage()
     cpu_percent = scpu.get_usage()
     boot_time = boot.get_boot_time()
+    disks = sdisk.get_disks()
+    disk_names, disk_percents, disk_uses, disk_totals = [], [], [], []
+    for disk in disks:
+        disk_names.append(disk.get_name())
+        disk_percents.append(disk.get_percent())
+        disk_uses.append(disk.get_used())
+        disk_totals.append(disk.get_total())
     disk_io = sdisk.get_disk_io()
 
     # create json object
     json_data = {
+        'version': 'v{}'.format(VERSION),
         'ram': {
             'percent_used': ram_percent,
             'used': ram_used,
@@ -108,6 +148,15 @@ def web_now():
         'boot': {
             'start_timestamp': boot_time
         },
+        'disks': [
+            {
+                'name': name,
+                'percent_used': percent,
+                'used': used,
+                'total': total
+            }
+            for name, percent, used, total in zip(disk_names, disk_percents, disk_uses, disk_totals)
+        ],
         'disk_io': disk_io
     }
 
@@ -130,23 +179,17 @@ def web_all():
         nic_names.append(nic.get_name())
         nic_sent.append(nic.get_sent())
         nic_recvs.append(nic.get_recv())
-    islinux, load_1m, load_5m, load_15m = load.get_load()
-    if not islinux:
+    is_linux, load_1m, load_5m, load_15m = load.get_load()
+    if not is_linux:
         load_1m = 'NULL'
         load_5m = 'NULL'
         load_15m = 'NULL'
     boot_time = boot.get_boot_time()
-    disks = sdisk.get_disks()
-    disk_names, disk_percents, disk_uses, disk_totals = [], [], [], []
-    for disk in disks:
-        disk_names.append(disk.get_name())
-        disk_percents.append(disk.get_percent())
-        disk_uses.append(disk.get_used())
-        disk_totals.append(disk.get_total())
     disk_io = sdisk.get_disk_io()
 
     # create json object
     json_data = {
+        'version': 'v{}'.format(VERSION),
         'memory': {
             'ram': {
                 'percent_used': ram_percent,
@@ -180,18 +223,7 @@ def web_all():
                 'timestamp': boot_time
             }
         },
-        'disks': {
-            'io': disk_io,
-            'list': [
-                {
-                    'name': name,
-                    'percent_used': percent,
-                    'used': used,
-                    'total': total
-                }
-                for name, percent, used, total in zip(disk_names, disk_percents, disk_uses, disk_totals)
-            ]
-        }
+        'disk_io': disk_io
     }
 
     logging.info('Retrieved all status for IP: {}'.format(request.remote_addr), extra={'topic': 'AGENT'})
