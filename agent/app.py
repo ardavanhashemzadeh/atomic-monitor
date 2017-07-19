@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-from configparser import ConfigParser
 from flask import Flask, jsonify, request
+from configparser import ConfigParser
+from uuid import getnode as get_mac
 import logging.handlers
 import platform
 import cpuinfo
 import logging
 import psutil
+import socket
 
+from bin.boot_time import BootTime
+from bin.load_avg import LoadAvg
+from bin.network import Network
+from bin.disk import Disk
 from bin.ram import RAM
 from bin.cpu import CPU
-from bin.network import Network
-from bin.load_avg import LoadAvg
-from bin.boot_time import BootTime
-from bin.disk import Disk
 
 
 # version
@@ -102,14 +104,31 @@ def web_specs():
     cpu_cores = '{} cores @ {}'.format(cpuinfo.get_cpu_info()['count'],
                                        cpuinfo.get_cpu_info()['hz_advertised'])
     total_ram = '{} GB'.format(psutil.virtual_memory().total / 1024 / 1024 / 1024)
+    boot_time = boot.get_boot_time()
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('8.8.8.8', 1))
+    is_linux, load_1m, load_5m, load_15m = load.get_load()
+    if not is_linux:
+        load_1m = 'NULL'
+        load_5m = 'NULL'
+        load_15m = 'NULL'
 
     # create json data
     json_data = {
         'version': 'v{}'.format(VERSION),
+        'hostname': socket.gethostname(),
+        'ip': s.getsockname()[0],
+        'mac': ':'.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2)),
         'os': operating_system,
         'cpu_brand': cpu_brand,
         'cpu_cores': cpu_cores,
-        'ram': total_ram
+        'ram': total_ram,
+        'boot': boot_time,
+        'load': {
+            '1min': load_1m,
+            '5min': load_5m,
+            '15min' load_15m: 
+        }
     }
 
     logging.info('Retrieved hardware specs for IP: {}'.format(request.remote_addr), extra={'topic': 'AGENT'})
