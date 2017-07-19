@@ -19,14 +19,7 @@ class RAM:
         total = gb_convert(status.total)
 
         # percentage, used, active, inactive, buffers, cached, shared, and total in gb
-        return status.percent,
-               used,
-               active,
-               inactive,
-               buffers,
-               cached,
-               shared,
-               total
+        return status.percent, used, active, inactive, buffers, cached, shared, total
 
     # get swap usage
     def get_swap_usage(self):

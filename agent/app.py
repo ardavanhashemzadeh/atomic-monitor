@@ -127,7 +127,7 @@ def web_specs():
         'load': {
             '1min': load_1m,
             '5min': load_5m,
-            '15min' load_15m: 
+            '15min': load_15m
         }
     }
 
@@ -141,7 +141,9 @@ def web_specs():
 @app.route('/now')
 def web_now():
     # retrieve current system specs
-    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = sram.get_memory_usage()
+    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = \
+        sram.get_memory_usage()
+    swap_percent, swap_used, swap_total = sram.get_swap_usage()
     cpu_percent = scpu.get_usage()
     boot_time = boot.get_boot_time()
     disks = sdisk.get_disks()
@@ -157,7 +159,7 @@ def web_now():
     json_data = {
         'version': 'v{}'.format(VERSION),
         'ram': {
-            'percent': ram_perc,
+            'percent': ram_percent,
             'used': ram_used,
             'active': ram_active,
             'inactive': ram_inactive,
@@ -169,7 +171,7 @@ def web_now():
         },
         'swap': {
             'percent': swap_percent
-        }
+        },
         'cpu': {
             'percent': cpu_percent
         },
@@ -198,7 +200,8 @@ def web_now():
 @app.route('/all')
 def web_all():
     # retrieve current system specs
-    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = sram.get_memory_usage()
+    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = \
+        sram.get_memory_usage()
     swap_percent, swap_used, swap_total = sram.get_swap_usage()
     cpu_percent = scpu.get_usage()
     nics_bytes = net.get_nic_status()
