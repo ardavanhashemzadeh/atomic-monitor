@@ -11,15 +11,10 @@ class RAM:
         status = psutil.virtual_memory()
 
         used = gb_convert(status.used)
-        active = gb_convert(status.active)
-        inactive = gb_convert(status.inactive)
-        buffers = gb_convert(status.buffers)
-        cached = gb_convert(status.cached)
-        shared = gb_convert(status.shared)
         total = gb_convert(status.total)
 
-        # percentage, used, active, inactive, buffers, cached, shared, and total in gb
-        return status.percent, used, active, inactive, buffers, cached, shared, total
+        # percentage, used & total in gb
+        return status.percent, round(used, 2), round(total, 2)
 
     # get swap usage
     def get_swap_usage(self):
@@ -29,4 +24,4 @@ class RAM:
         total = gb_convert(status.total)
 
         # percentage, used & total in gigabyte(s)
-        return status.percent, used, total
+        return status.percent, round(used, 2), round(total, 2)

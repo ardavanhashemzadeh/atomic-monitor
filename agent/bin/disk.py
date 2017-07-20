@@ -1,13 +1,55 @@
-import datetime
+from datetime import datetime
+from threading import Thread
 import psutil
 import time
 
 
+old_io = 0.00
+current_io = 0
+timer = 0
+
+
+# convert bytes to gigabytes
 def gb_convert(byts):
     return byts / 1024 / 1024 / 1024
 
 
+# loop every .2 seconds to update I/O records
+def update_io():
+    global old_io
+    global current_io
+    global timer
+    while True:
+        # get current status
+        new_io = psutil.disk_io_counters(perdisk=False)
+
+        # do math
+        interval = (datetime.now() - timer).total_seconds()
+        if new_io.write_bytes - old_io.write_bytes == 0:
+            current_io = 0.0
+        else:
+            current_io = (new_io.write_bytes - old_io.write_bytes) / interval
+
+        # give current I/O to old I/O for another math problem
+        old_io = new_io
+        timer = datetime.now()
+
+        time.sleep(0.2)
+
+
 class Disk:
+    def __init__(self):
+        global old_io
+        global timer
+        # initial info
+        old_io = psutil.disk_io_counters(perdisk=False)
+        timer = datetime.now()
+
+        # start thread process
+        thd = Thread(target=update_io)
+        thd.daemon = True
+        thd.start()
+
     # get disk usage
     def get_disks(self):
         status = psutil.disk_partitions()
@@ -18,8 +60,8 @@ class Disk:
             specs = psutil.disk_usage(dsk.mountpoint)
 
             # convert bytes to gigabytes
-            used = gb_convert(specs.used)
-            total = gb_convert(specs.total)
+            used = round(gb_convert(specs.used), 0)
+            total = round(gb_convert(specs.total), 0)
 
             disks.append(Device(dsk.mountpoint, specs.percent, used, total))
 
@@ -28,17 +70,10 @@ class Disk:
 
     # get disk I/O
     def get_disk_io(self):
-        disk_counters = psutil.disk_io_counters(perdisk=False)
-        counter_ts = datetime.datetime.now()
-        time.sleep(0.2)
+        global current_io
 
-        now = datetime.datetime.now()
-        interval = (now - counter_ts).total_seconds()
-
-        disk = psutil.disk_io_counters(perdisk=False)
-        io = (disk.write_bytes - disk_counters.write_bytes) / interval
-
-        return io
+        # current disk I/O
+        return current_io
 
 
 class Device:

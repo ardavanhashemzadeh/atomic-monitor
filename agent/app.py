@@ -2,7 +2,7 @@
 from flask import Flask, jsonify, request
 from configparser import ConfigParser
 from uuid import getnode as get_mac
-import logging.handlers
+from datetime import datetime
 import platform
 import cpuinfo
 import logging
@@ -71,18 +71,35 @@ except IOError as e:
 
 
 # prepare logging
+logger = None
 try:
-    logger = logging.getLogger('AtomicMonitor Agent')
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.handlers.RotatingFileHandler(log_file, maxBytes=log_size_limit,
-                                                           backupCount=log_file_number_limit))
-    ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter('%(asctime)s | %(levelname)-8s | %(topic)-5s | %(message)s'))
-    logger.addHandler(ch)
+    logger = open(log_file, 'a')
 except IOError as e:
-    print('FILE ERROR: Unable to prepare log file! STACETRACE: {}'.format(e.args[1]))
+    print('FILE ERROR: Unable to open log file! STACETRACE: {}'.format(e.args[1]))
     print('FILE ERROR: Force closing program...')
     exit()
+
+
+# perform logging
+LOG_FORMAT = '{} | {:6s} | {:6s} | {}\n'
+
+
+def log(level, typ, message):
+    try:
+        print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
+                                level,
+                                typ,
+                                message))
+        logger.write(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
+                                       level,
+                                       typ,
+                                       message))
+        logger.flush()
+    except IOError as ex:
+        print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
+                                'ERROR',
+                                'AGENT',
+                                'Unable to log to file! STACKTRACE: {}'.format(ex.args[1])))
 
 
 # setup variables
@@ -131,7 +148,7 @@ def web_specs():
         }
     }
 
-    logging.info('Retrieved hardware specs for IP: {}'.format(request.remote_addr), extra={'topic': 'AGENT'})
+    log('INFO', 'AGENT', 'Retrieved hardware specs for IP: {}'.format(request.remote_addr))
 
     # print json data
     return jsonify(json_data)
@@ -141,8 +158,7 @@ def web_specs():
 @app.route('/now')
 def web_now():
     # retrieve current system specs
-    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = \
-        sram.get_memory_usage()
+    ram_percent, ram_used, ram_total = sram.get_memory_usage()
     swap_percent, swap_used, swap_total = sram.get_swap_usage()
     cpu_percent = scpu.get_usage()
     boot_time = boot.get_boot_time()
@@ -161,11 +177,6 @@ def web_now():
         'ram': {
             'percent': ram_percent,
             'used': ram_used,
-            'active': ram_active,
-            'inactive': ram_inactive,
-            'buffers': ram_buffers,
-            'cached': ram_cached,
-            'shared': ram_shared,
             'total': ram_total,
 
         },
@@ -190,7 +201,7 @@ def web_now():
         'disk_io': disk_io
     }
 
-    logging.info('Retrieved now status for IP: {}'.format(request.remote_addr), extra={'topic': 'AGENT'})
+    log('INFO', 'AGENT', 'Retrieved now status for IP: {}'.format(request.remote_addr))
 
     # print json data
     return jsonify(json_data)
@@ -200,8 +211,7 @@ def web_now():
 @app.route('/all')
 def web_all():
     # retrieve current system specs
-    ram_percent, ram_used, ram_active, ram_inactive, ram_buffers, ram_cached, ram_shared, ram_total = \
-        sram.get_memory_usage()
+    ram_percent, ram_used, ram_total = sram.get_memory_usage()
     swap_percent, swap_used, swap_total = sram.get_swap_usage()
     cpu_percent = scpu.get_usage()
     nics_bytes = net.get_nic_status()
@@ -224,11 +234,6 @@ def web_all():
             'ram': {
                 'percent': ram_percent,
                 'used': ram_used,
-                'active': ram_active,
-                'inactive': ram_inactive,
-                'buffers': ram_buffers,
-                'cached': ram_cached,
-                'shared': ram_shared,
                 'total': ram_total,
 
             },
@@ -257,7 +262,7 @@ def web_all():
         'disk_io': disk_io
     }
 
-    logging.info('Retrieved all status for IP: {}'.format(request.remote_addr), extra={'topic': 'AGENT'})
+    log('INFO', 'AGENT', 'Retrieved all status for IP: {}'.format(request.remote_addr))
 
     # print json data
     return jsonify(json_data)
@@ -265,7 +270,7 @@ def web_all():
 
 # start flask process
 if __name__ == '__main__':
-    logging.info('Starting program...', extra={'topic': 'AGENT'})
+    log('INFO', 'AGENT', 'Starting program...')
 
     # start Flask service
     app.run(host=flsk_host, port=flsk_port)
