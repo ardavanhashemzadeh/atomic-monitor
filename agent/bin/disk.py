@@ -4,9 +4,9 @@ import psutil
 import time
 
 
-old_io = 0.00
-current_io = 0
-timer = 0
+old_status = None
+current_io_status = None
+old_time = 0
 
 
 # convert bytes to gigabytes
@@ -14,36 +14,36 @@ def gb_convert(byts):
     return byts / 1024 / 1024 / 1024
 
 
-# loop every .2 seconds to update I/O records
+# loop every 1 second to update I/O records
 def update_io():
-    global old_io
-    global current_io
-    global timer
+    global old_status
+    global current_io_status
+    global old_time
     while True:
         # get current status
-        new_io = psutil.disk_io_counters(perdisk=False)
+        new_status = psutil.disk_io_counters(perdisk=False)
 
-        # do math
-        interval = (datetime.now() - timer).total_seconds()
-        if new_io.write_bytes - old_io.write_bytes == 0:
+        # get 1 second difference in I/O format
+        interval = (datetime.now() - old_time).total_seconds()
+        if new_status.write_bytes - old_status.write_bytes == 0:
             current_io = 0.0
         else:
-            current_io = (new_io.write_bytes - old_io.write_bytes) / interval
+            current_io = (new_status.write_bytes - old_status.write_bytes) / interval
 
         # give current I/O to old I/O for another math problem
-        old_io = new_io
-        timer = datetime.now()
+        old_status = new_status
+        old_time = datetime.now()
 
-        time.sleep(0.2)
+        time.sleep(1)
 
 
 class Disk:
     def __init__(self):
-        global old_io
-        global timer
+        global old_status
+        global old_time
         # initial info
-        old_io = psutil.disk_io_counters(perdisk=False)
-        timer = datetime.now()
+        old_status = psutil.disk_io_counters(perdisk=False)
+        old_time = datetime.now()
 
         # start thread process
         thd = Thread(target=update_io)
@@ -60,8 +60,8 @@ class Disk:
             specs = psutil.disk_usage(dsk.mountpoint)
 
             # convert bytes to gigabytes
-            used = round(gb_convert(specs.used), 0)
-            total = round(gb_convert(specs.total), 0)
+            used = round(gb_convert(specs.used), 1)
+            total = round(gb_convert(specs.total), 1)
 
             disks.append(Device(dsk.mountpoint, specs.percent, used, total))
 

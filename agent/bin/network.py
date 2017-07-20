@@ -4,8 +4,8 @@ import psutil
 import time
 
 
-previous_nics = list()
-interval = 0
+old_status = None
+current_nic_status = None
 
 
 # convert bytes to kilobytes
@@ -15,50 +15,32 @@ def bytes_to_kb(byts):
 
 # loop every second to update records
 def update_nics():
-    global previous_nics
-    global interval
+    global old_status
+    global current_nic_status
     while True:
-        # get current status
-        now_nics = psutil.net_io_counters(pernic=True)
+        # get current net status
+        new_stats = psutil.net_io_counters(pernic=True)
 
-        for i in range(0, len(previous_nics)):
-            name = previous_nics[0]
+        # get 1 second difference in KB
+        current_nic_status = list()
+        nic_names = list()
+        for nic in old_status.keys():
+            nic_names.append(nic)
+        for i in range(0, len(old_status)):
+            diff_sent = round(bytes_to_kb(new_stats[i].get_sent() - old_status[i].get_sent()), 3)
+            diff_recv = round(bytes_to_kb(new_stats[i].get_recv() - old_status[i].get_recv()), 3)
 
+            current_nic_status.append(NIC(nic_names[i], diff_sent, diff_recv))
 
-
-
-        for net in previous_nics.keys():
-            diff_sent =
-
-
-        # get current status
-        nic_list = psutil.net_io_counters(pernic=True)
-        for net in nic_list.keys():
-            new_nics.append(NIC(net, nic_list[net].bytes_sent, nic_list[net].bytes_recv))
-
-        # do math to get change in 1 second difference
-        nics = list()
-        for i in range(0, len(old_nics)):
-            diff_sent = round(bytes_to_kb(new_nics[i].get_sent() - old_nics[i].get_sent()), 3)
-            diff_recv = round(bytes_to_kb(new_nics[i].get_recv() - old_nics[i].get_recv()), 3)
-
-            nics.append(NIC(old_nics[i].get_name(),
-                            diff_sent,
-                            diff_recv))
-
-        # give current NICs to old list for another math problem
-        old_nics = new_nics
-
-        time.sleep(0.2)
+        time.sleep(1)
 
 
 class Network:
     def __init__(self):
-        global previous_nics
-        global interval
+        global old_status
+
         # initial list
-        previous_nics = psutil.net_io_counters(pernic=True)
-        interval = datetime.now()
+        old_status = psutil.net_io_counters(pernic=True)
 
         # start thread process
         thd = Thread(target=update_nics)
@@ -67,10 +49,10 @@ class Network:
 
     # retrieve NICs update
     def get_nic_status(self):
-        global nics
+        global current_nic_status
 
-        # NICs w/ num bytes sent/received
-        return nics
+        # NICs 
+        return current_nic_status
 
 
 class NIC:
