@@ -21,10 +21,11 @@
 					<h6>Home</h6>
 				</a></li>
 				<li><a href='servers.html'>
+					<div id='nav-active'></div>
 					<div><i class="fa fa-server" aria-hidden="true"></i></div>
 					<h6>Servers</h6>
 				</a></li>
-				<li><a href='#'>
+				<li><a href='alerts.html'>
 					<div><i class="fa fa-bell" aria-hidden="true"></i></div>
 					<h6>Alerts</h6>
 				</a></li>
@@ -85,7 +86,7 @@
                             </div>
                             <div id='load-graph' class='content-graph'>
                                 <div class='graph-chart' style='padding: 0'>
-                                    <h3>Load History</h3>
+                                    <h3>Load History (RED = 1min, PINK = 5min, YELLOW = 15min)</h3>
                                     <div id='load-chart'></div>
                                 </div>
                             </div>
@@ -114,14 +115,17 @@
                                 <table>
                                     <tr>
                                         <td class='device'>/</td>
+                                        <td class='size'>500 GB</td>
                                         <td><div class='progress-bar'><span class='good' style='width: 33%'></span></div></td>
                                     </tr>
                                     <tr>
                                         <td class='device'>/var/www</td>
+                                        <td class='size'>20 GB</td>
                                         <td><div class='progress-bar'><span class='bad' style='width: 96%'></span></div></td>
                                     </tr>
                                     <tr>
                                         <td class='device'>/data-storage</td>
+                                        <td class='size'>1000 GB</td>
                                         <td><div class='progress-bar'><span class='warn' style='width: 71%'></span></div></td>
                                     </tr>
                                 </table>
@@ -130,43 +134,43 @@
                                 <h3>System Specifications</h3>
                                 <table>
                                     <tr>
-                                        <td>Hostname</td>
+                                        <td class='system-info'>Hostname</td>
                                         <td class='info'>UbuntuS-MAIN</td>
                                     </tr>
                                     <tr>
-                                        <td>IP</td>
+                                        <td class='system-info'>IP</td>
                                         <td class='info'>10.0.0.1</td>
                                     </tr>
                                     <tr>
-                                        <td>MAC</td>
+                                        <td class='system-info'>MAC</td>
                                         <td class='info'>FF:FF:FF:FF:FF:FF</td>
                                     </tr>
                                     <tr>
-                                        <td>Availability</td>
+                                        <td class='system-info'>Availability</td>
                                         <td class='info'>98%</td>
                                     </tr>
                                     <tr>
-                                        <td>OS</td>
+                                        <td class='system-info'>OS</td>
                                         <td class='info'>Ubuntu Server 17.04</td>
                                     </tr>
                                     <tr>
-                                        <td>CPU Brand</td>
+                                        <td class='system-info'>CPU Brand</td>
                                         <td class='info'>AMD FX 8200</td>
                                     </tr>
                                     <tr>
-                                        <td>CPU Speed</td>
+                                        <td class='system-info'>CPU Speed</td>
                                         <td class='info'>3 cores @ 3.9 GHz</td>
                                     </tr>
                                     <tr>
-                                        <td>RAM</td>
+                                        <td class='system-info'>RAM</td>
                                         <td class='info'>16GB</td>
                                     </tr>
                                     <tr>
-                                        <td>Uptime</td>
+                                        <td class='system-info'>Uptime</td>
                                         <td class='info'>4 days, 2:23:44</td>
                                     </tr>
                                     <tr>
-                                        <td>Load</td>
+                                        <td class='system-info'>Load</td>
                                         <td class='info'>
                                             <span class='text-good'>0.08</span>
                                             <span class='text-warn'>0.89</span>
@@ -180,35 +184,59 @@
                     <div id='alerts' class='graph-section'>
                         <div id='alerts-menu'>
                             <h3>Filter Options</h3>
-                            <form>
+                            <div id='alerts-form'>
                                 <label>Filter logs by alert level:</label>
                                 <select name='alertFilterLevel'>
                                     <option>All</option>
                                     <option>Warning</option>
                                     <option>Error</option>
                                 </select>
-                                <label>Select server to retrieve errors for:</label>
-                                <select name='alertServer'>
-                                    <option>UbuntuS-MAIN</option>
-                                    <option>UbuntuS-DB</option>
-                                    <option>UbuntuS-MM</option>
-                                </select>
                                 <label># of error logs to view:</label>
                                 <select name='alertNumLogs'>
-                                    <option>25</option>
                                     <option>50</option>
                                     <option>100</option>
                                     <option>200</option>
+                                    <option>250</option>
+                                    <option>500</option>
                                 </select>
                                 <label>Keywords to search for:</label>
                                 <input type='text' name='alertKeywordKeep' />
                                 <label>Keywords to filter out:</label>
                                 <input type='text' name='alertKeywordRemove' />
                                 <button onclick=''>Submit</button>
-                            </form>
+                            </div>
                         </div>
                         <div id='alerts-log'>
-
+                            <div class='log'>
+                                <div class='log-level'><span class='bad'>Error</span></div>
+                                <div class='log-server'>UbuntuS-MAIN</div>
+                                <div class='log-reason'>Server not responding to ping</div>
+                                <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                            </div>
+                            <div class='log'>
+                                <div class='log-level'><span class='warn'>Warning</span></div>
+                                <div class='log-server'>UbuntuS-MAIN</div>
+                                <div class='log-reason'>Slow ping response: 433ms</div>
+                                <div class='log-timestamp'><span>10 min ago</span> (7/20/17 23:34:33)</div>
+                            </div>
+                            <div class='log'>
+                                <div class='log-level'><span class='bad'>Error</span></div>
+                                <div class='log-server'>UbuntuS-MAIN</div>
+                                <div class='log-reason'>Server not responding to ping</div>
+                                <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                            </div>
+                            <div class='log'>
+                                <div class='log-level'><span class='warn'>Warning</span></div>
+                                <div class='log-server'>UbuntuS-MAIN</div>
+                                <div class='log-reason'>Slow ping response: 433ms</div>
+                                <div class='log-timestamp'><span>10 min ago</span> (7/20/17 23:34:33)</div>
+                            </div>
+                            <div class='log'>
+                                <div class='log-level'><span class='bad'>Error</span></div>
+                                <div class='log-server'>UbuntuS-MAIN</div>
+                                <div class='log-reason'>Server not responding to ping</div>
+                                <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                            </div>
                         </div>
                     </div>
                 </div>

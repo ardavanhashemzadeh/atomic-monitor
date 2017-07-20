@@ -370,26 +370,6 @@ new Chartist.Line('#ram-chart', {
 		{
 			name: 'used',
 			data: [2, 3, 2, 2, 2, 4, 5, 5]
-		},
-		{
-			name: 'active',
-			data: [2, 2, 2, 3, 3, 2, 1, 1]
-		},
-		{
-			name: 'inactive',
-			data: [1, 1, 1, 1, 2, 3, 3, 2]
-		},
-		{
-			name: 'buffers',
-			data: [2, 2, 2, 2, 3, 4, 4, 3]
-		},
-		{
-			name: 'cached',
-			data: [2, 2, 3, 3, 2, 2, 1, 1]
-		},
-		{
-			name: 'shared',
-			data: [0, 0, 0, 0, 2, 2, 1, 0]
 		}
 	]
 }, 

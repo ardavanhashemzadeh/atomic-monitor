@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset='utf-8'>
+        <meta name='author' content='Atomicbeast101 @ github.com/atomicbeast101'>
+        <meta name='description' content='Atomic Monitor System'>
+        <meta name='viewport' content='width=device-width' />
+        <link rel='shortcut icon' href='favicon.ico' type='image/x-icon' />
+		<link type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css' rel='stylesheet'>
+        <link type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/chartist/0.11.0/chartist.min.css' rel='stylesheet'>
+        <link type='text/css' href='assets/css/pace-theme-minimal.tmpl.css' rel='stylesheet'>
+        <link type='text/css' href='assets/css/main.css' rel='stylesheet'>
+        <title>Atomic Monitor | Alerts</title>
+    </head>
+    <body>
+		<nav>
+			<img src='assets/img/logo.png' title='Atomic Monitor System' />
+			<ul>
+				<li><a href='index.html'>
+					<div><i class="fa fa-home" aria-hidden="true"></i></div>
+					<h6>Home</h6>
+				</a></li>
+				<li><a href='servers.html'>
+					<div><i class="fa fa-server" aria-hidden="true"></i></div>
+					<h6>Servers</h6>
+				</a></li>
+				<li><a href='alerts.html'>
+					<div id='nav-active'></div>
+					<div><i class="fa fa-bell" aria-hidden="true"></i></div>
+					<h6>Alerts</h6>
+				</a></li>
+				<li><a href='#'>
+					<div><i class="fa fa-user" aria-hidden="true"></i></div>
+					<h6>Admin</h6>
+				</a></li>
+			</ul>
+		</nav>
+		<div id='body'>
+            <div id='full-alerts'>
+                <h2 class='title'>Alerts History</h2>
+                <div id='alerts-menu'>
+                    <h3>Filter Options</h3>
+                    <div id='alerts-form'>
+                        <label>Filter logs by alert level:</label>
+                        <select name='alertFilterLevel'>
+                            <option>All</option>
+                            <option>Warning</option>
+                            <option>Error</option>
+                        </select>
+                        <label>Filter logs by server:</label>
+                        <select name='alertFilterServer'>
+                            <option>UbuntuS-MAIN</option>
+                            <option>UbuntuS-DB</option>
+                            <option>UbuntuS-MM</option>
+                        </select>
+                        <label># of error logs to view:</label>
+                        <select name='alertNumLogs'>
+                            <option>50</option>
+                            <option>100</option>
+                            <option>200</option>
+                            <option>250</option>
+                            <option>500</option>
+                        </select>
+                        <label>Keywords to search for:</label>
+                        <input type='text' name='alertKeywordKeep' />
+                        <label>Keywords to filter out:</label>
+                        <input type='text' name='alertKeywordRemove' />
+                        <button onclick=''>Submit</button>
+                    </div>
+                </div>
+                <div id='alerts-log'>
+                    <div class='log'>
+                        <div class='log-level'><span class='bad'>Error</span></div>
+                        <div class='log-server'>UbuntuS-MAIN</div>
+                        <div class='log-reason'>Server not responding to ping</div>
+                        <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                    </div>
+                    <div class='log'>
+                        <div class='log-level'><span class='warn'>Warning</span></div>
+                        <div class='log-server'>UbuntuS-MAIN</div>
+                        <div class='log-reason'>Slow ping response: 433ms</div>
+                        <div class='log-timestamp'><span>10 min ago</span> (7/20/17 23:34:33)</div>
+                    </div>
+                    <div class='log'>
+                        <div class='log-level'><span class='bad'>Error</span></div>
+                        <div class='log-server'>UbuntuS-MAIN</div>
+                        <div class='log-reason'>Server not responding to ping</div>
+                        <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                    </div>
+                    <div class='log'>
+                        <div class='log-level'><span class='warn'>Warning</span></div>
+                        <div class='log-server'>UbuntuS-MAIN</div>
+                        <div class='log-reason'>Slow ping response: 433ms</div>
+                        <div class='log-timestamp'><span>10 min ago</span> (7/20/17 23:34:33)</div>
+                    </div>
+                    <div class='log'>
+                        <div class='log-level'><span class='bad'>Error</span></div>
+                        <div class='log-server'>UbuntuS-MAIN</div>
+                        <div class='log-reason'>Server not responding to ping</div>
+                        <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
