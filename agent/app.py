@@ -5,7 +5,6 @@ from uuid import getnode as get_mac
 from datetime import datetime
 import platform
 import cpuinfo
-import logging
 import psutil
 import socket
 

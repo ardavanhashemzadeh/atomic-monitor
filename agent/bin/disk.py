@@ -26,9 +26,9 @@ def update_io():
         # get 1 second difference in I/O format
         interval = (datetime.now() - old_time).total_seconds()
         if new_status.write_bytes - old_status.write_bytes == 0:
-            current_io = 0.0
+            current_io_status = 0.0
         else:
-            current_io = (new_status.write_bytes - old_status.write_bytes) / interval
+            current_io_status = (new_status.write_bytes - old_status.write_bytes) / interval
 
         # give current I/O to old I/O for another math problem
         old_status = new_status
@@ -70,10 +70,10 @@ class Disk:
 
     # get disk I/O
     def get_disk_io(self):
-        global current_io
+        global current_io_status
 
         # current disk I/O
-        return current_io
+        return current_io_status
 
 
 class Device:
