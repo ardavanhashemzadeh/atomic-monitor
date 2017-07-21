@@ -38,13 +38,12 @@ def check_tables(logging, con, cur, db_prefix):
         # 1 : disabled
         # 2 : maintenance
         cur.execute("""CREATE TABLE IF NOT EXISTS {}_server (
-                    id INTEGER NOT NULL AUTO_INCREMENT,
                     name VARCHAR(100) NOT NULL,
                     type CHAR(2) NOT NULL,
                     mode CHAR(1) NOT NULL,
                     hostname VARCHAR(255) NOT NULL,
                     port SMALLINT NOT NULL,
-                    PRIMARY KEY(id));""".format(db_prefix))
+                    PRIMARY KEY(name));""".format(db_prefix))
         logging.info('Checking {}_server table.'.format(db_prefix), extra={'topic': 'CM'})
 
         # create/check error logs table
