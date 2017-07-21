@@ -44,19 +44,12 @@ config = ConfigParser()
 config.read('config.ini')
 err_type = ''
 log_file = ''
-log_size_limit = ''
-log_file_number_limit = 0
 flsk_host = ''
 flsk_port = 0
 try:
     # log values
     err_type = 'Log > Name'
     log_file = config.get('Log', 'Name', fallback='agent.log')
-    err_type = 'Log > Size_limit'
-    log_size_limit = config.get('Log', 'Size_limit', fallback='5mb')
-    log_size_limit = convert_bytes(log_size_limit)
-    err_type = 'Log > File_Limit'
-    log_file_number_limit = config.getint('Log', 'File_Limit', fallback=10)
 
     # flask values
     err_type = 'Flask > Host'
@@ -176,10 +169,11 @@ def web_now():
             'percent': ram_percent,
             'used': ram_used,
             'total': ram_total,
-
         },
         'swap': {
-            'percent': swap_percent
+            'percent': swap_percent,
+            'used': swap_used,
+            'total': swap_total
         },
         'cpu': {
             'percent': cpu_percent
