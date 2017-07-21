@@ -132,16 +132,6 @@ def check_tables(logging, con, cur, db_prefix):
                     PRIMARY KEY(id));""".format(db_prefix))
         logging.info('Checking {}_disk table.'.format(db_prefix), extra={'topic': 'CM'})
 
-        # create/check disk logs table
-        cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk_io (
-                    id BIGINT NOT NULL AUTO_INCREMENT,
-                    server_id INTEGER NOT NULL,
-                    stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    status CHAR(1),
-                    io DECIMAL(5,2),
-                    PRIMARY KEY(id));""".format(db_prefix))
-        logging.info('Checking {}_disk_iotable.'.format(db_prefix), extra={'topic': 'CM'})
-
         # submit changes to SQL server
         con.commit()
         logging.info('Database prepared!', extra={'topic': 'CM'})
@@ -242,15 +232,4 @@ def insert_disk_data(logging, cur, db_prefix, con, server_name, server_id, statu
         con.commit()
     except pymysql.Error as ex:
         logging.error('Unable to insert [disk] data for server [{}] to SQL database! STACKTRACE: {}'
-                      .format(server_name, ex.args[1]), extra={'topic': 'SQL'})
-
-
-# insert new disk I/O data to SQL database
-def insert_disk_io_data(logging, cur, db_prefix, con, server_name, server_id, status, io=None):
-    try:
-        cur.execute('INSERT INTO {}_disk_io (server_id, status, io) '
-                    'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, io)
-        con.commit()
-    except pymysql.Error as ex:
-        logging.error('Unable to insert [disk_io] data for server [{}] to SQL database! STACKTRACE: {}'
                       .format(server_name, ex.args[1]), extra={'topic': 'SQL'})

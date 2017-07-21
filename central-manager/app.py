@@ -210,15 +210,6 @@ def scrape_data(time):
                                                                   'High 15m load usage: {}'.format(
                                                                       data['load']['15min']))
 
-                            # insert disk io data to SQL db
-                            db_management.insert_disk_io_data(logging, cur, db_prefix, con, serv.name, serv.id, 1, 
-                                                              data['disk_io'])
-
-                            # log if disk I/O is 1.0 or above
-                            if data['disk_io'] >= 1.0:
-                                db_management.insert_log_data(logging, con, cur, serv.name, 0,
-                                                              'High disk I/O: {}'.format(data['disk_io']))
-
                             logging.info('Retrieved and logged data for server [{}]!'.format(serv.name),
                                          extra={'topic': 'CM'})
                     except pymysql.Error:
