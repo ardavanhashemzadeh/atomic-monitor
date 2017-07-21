@@ -119,7 +119,7 @@ def web_specs():
     cpu_brand = cpuinfo.get_cpu_info()['brand']
     cpu_cores = '{} cores @ {}'.format(cpuinfo.get_cpu_info()['count'],
                                        cpuinfo.get_cpu_info()['hz_advertised'])
-    total_ram = '{} GB'.format(psutil.virtual_memory().total / 1024 / 1024 / 1024)
+    total_ram = '{} GB'.format(round(psutil.virtual_memory().total / 1024 / 1024 / 1024), 0)
     boot_time = boot.get_boot_time()
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(('8.8.8.8', 1))
