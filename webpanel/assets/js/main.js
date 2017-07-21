@@ -164,7 +164,7 @@ $('.gage').knob({
 	font: 'sans-serif'
 });
 $('.gage').each(function() {
-	var value = $(this).val().slice(0, -1);
+	var value = $(this).val();
 	if(value >= 70 && value < 90) {
 		$(this).trigger('configure', { 'fgColor': '#F57C00' });
 	}
