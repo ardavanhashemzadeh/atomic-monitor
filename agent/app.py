@@ -80,7 +80,7 @@ except IOError as e:
 
 
 # perform logging
-LOG_FORMAT = '{} | {:6s} | {:6s} | {}\n'
+LOG_FORMAT = '{} | {:6s} | {:6s} | {}'
 
 
 def log(level, typ, message):
@@ -92,7 +92,7 @@ def log(level, typ, message):
         logger.write(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
                                        level,
                                        typ,
-                                       message))
+                                       message) + '\n')
         logger.flush()
     except IOError as ex:
         print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
@@ -168,7 +168,6 @@ def web_now():
         disk_percents.append(disk.get_percent())
         disk_uses.append(disk.get_used())
         disk_totals.append(disk.get_total())
-    disk_io = sdisk.get_disk_io()
 
     # create json object
     json_data = {
@@ -196,8 +195,7 @@ def web_now():
                 'total': total
             }
             for name, percent, used, total in zip(disk_names, disk_percents, disk_uses, disk_totals)
-        ],
-        'disk_io': disk_io
+        ]
     }
 
     log('INFO', 'AGENT', 'Retrieved now status for IP: {}'.format(request.remote_addr))
@@ -224,7 +222,6 @@ def web_all():
         load_1m = 'NULL'
         load_5m = 'NULL'
         load_15m = 'NULL'
-    disk_io = sdisk.get_disk_io()
 
     # create json object
     json_data = {
@@ -257,8 +254,7 @@ def web_all():
             '1min': load_1m,
             '5min': load_5m,
             '15min': load_15m
-        },
-        'disk_io': disk_io
+        }
     }
 
     log('INFO', 'AGENT', 'Retrieved all status for IP: {}'.format(request.remote_addr))

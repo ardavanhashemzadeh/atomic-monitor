@@ -14,7 +14,7 @@ class RAM:
         total = gb_convert(status.total)
 
         # percentage, used & total in gb
-        return status.percent, round(used, 2), round(total, 2)
+        return round(status.percent, 0), round(used, 2), round(total, 2)
 
     # get swap usage
     def get_swap_usage(self):
@@ -24,4 +24,4 @@ class RAM:
         total = gb_convert(status.total)
 
         # percentage, used & total in gigabyte(s)
-        return status.percent, round(used, 2), round(total, 2)
+        return round(status.percent, 0), round(used, 2), round(total, 2)

@@ -27,8 +27,8 @@ def update_nics():
         for nic in old_status.keys():
             nic_names.append(nic)
         for i in range(0, len(old_status)):
-            diff_sent = round(bytes_to_kb(new_stats[i].get_sent() - old_status[i].get_sent()), 3)
-            diff_recv = round(bytes_to_kb(new_stats[i].get_recv() - old_status[i].get_recv()), 3)
+            diff_sent = round(bytes_to_kb(new_stats[nic_names[i]].bytes_sent - old_status[nic_names[i]].bytes_sent), 3)
+            diff_recv = round(bytes_to_kb(new_stats[nic_names[i]].bytes_recv - old_status[nic_names[i]].bytes_recv), 3)
 
             current_nic_status.append(NIC(nic_names[i], diff_sent, diff_recv))
 
