@@ -1,1 +1,5 @@
 .idea/*
+agent/agent.log
+central-manager/central-manager.log
+agent/bin/__pycache__/*
+central-manager/bin/__pycache__/*

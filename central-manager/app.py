@@ -5,12 +5,13 @@ from warnings import filterwarnings
 from urllib.request import urlopen
 from datetime import datetime
 from threading import Thread
+import subprocess
+import platform
 import pymysql
-import pexpect
 import json
 
 from bin.db_management import DBManagement
-from bin.server import Server
+from bin.server_obj import Server
 from bin.error import Error
 from bin.graph import Graph
 from bin.spec import Spec
@@ -33,7 +34,7 @@ def convert_bytes(byts):
 
 # load config file
 config = ConfigParser()
-config.read('config.ini')
+config.read('P:\\atomi\\Desktop\\config.ini')
 err_type = ''
 log_file = ''
 db_host = ''
@@ -90,7 +91,7 @@ except IOError as e:
 
 
 # perform logging
-LOG_FORMAT = '{} | {:6s} | {:6s} | {}'
+LOG_FORMAT = '{} | {:^6s} | {:^6s} | {}'
 
 
 def log(level, typ, message):
@@ -125,17 +126,33 @@ filterwarnings('ignore', category=pymysql.Warning)
 # ping test server
 def ping_server(host):
     # ping server
-    result = pexpect.spawn('ping -c 1 {}'.format(host))
-
     try:
-        # retrieve ping time
-        p = result.readline()
-        time_ping = float(p[p.find('time=') + 5:p.find(' ms')])
+        if 'Windows' in platform.platform():
+            ping_result = subprocess.Popen(
+                ['ping', '-n', '1', '{}'.format(host)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        else:
+            ping_result = subprocess.Popen(
+                ['ping', '-c', '1', '{}'.format(host)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
 
-        # ping time
-        return time_ping
+        if 'time<' in ping_result:
+            ping_result = float(result[result.find('time<') + 5:result.find(' ms')])
+        elif 'time=' in ping_result:
+            ping_result = float(result[result.find('time=') + 5:result.find(' ms')])
+        else:
+            ping_result = -1
+        print(ping_result)
+        return -1
+    except subprocess.CalledProcessError:
+        return -1
     except ValueError:
-        # ping time
+        return -1
+    except Exception:
         return -1
 
 
@@ -146,102 +163,104 @@ def scrape_data(time):
         servers = list()
         try:
             # get list of servers
-            for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
-                servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
+            #for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
+            #    servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
 
             # go through each server and scrape data
-            for serv in servers:
-                ping_result = ping_server(serv.host)
-                if ping_result is not -1:
-                    try:
-                        # sniff up data from a server
-                        with urlopen('http://{}:{}/'.format(serv.host, serv.port)) as url:
-                            data = json.loads(url.read().decode())
+            #for serv in servers:
+            serv = Server(1, 'UbuntuS-MAIN', 'GN', 0, 'ubuntus-main.watson.io', 5000)
+            ping_result = ping_server(serv.get_host())
+            if ping_result is not -1:
+                try:
+                    # sniff up data from a server
+                    with urlopen('http://{}:{}/'.format(serv.get_host(), serv.get_port)) as url:
+                        data = json.loads(url.read().decode())
 
-                            # insert data to SQL db
-                            db_manager.insert_ping_data(cur, db_prefix, con, serv.name, serv.id, 1, ping_result)
-                            if ping_result > 200:
-                                db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                           'Slow ping response: {} ms'.format(ping_result))
+                        # insert data to SQL db
+                        db_manager.insert_ping_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1, ping_result)
+                        if ping_result > 200:
+                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                       'Slow ping response: {} ms'.format(ping_result))
 
-                            # insert ram data to SQL db
-                            db_manager.insert_memory_data(cur, db_prefix, con, serv.name, serv.id, 1,
-                                                          data['memory']['ram']['percent'],
-                                                          data['memory']['ram']['used'],
-                                                          data['memory']['ram']['active'],
-                                                          data['memory']['ram']['inactive'],
-                                                          data['memory']['ram']['buffers'],
-                                                          data['memory']['ram']['cached'],
-                                                          data['memory']['ram']['shared'],
-                                                          data['memory']['ram']['total'],
-                                                          data['memory']['swap']['percent'],
-                                                          data['memory']['swap']['used'],
-                                                          data['memory']['swap']['total'])
-                            
-                            # log if RAM/swap is 90% or above
-                            if data['memory']['ram']['percent'] >= 90:
-                                db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                           'High RAM usage: {}%'.format(
-                                                               data['memory']['ram']['percent']))
-                            if data['memory']['swap']['percent'] >= 90:
-                                db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                           'High swap usage: {}%'.format(
-                                                               data['memory']['swap']['percent']))
+                        # insert ram data to SQL db
+                        db_manager.insert_memory_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
+                                                      data['memory']['ram']['percent'],
+                                                      data['memory']['ram']['used'],
+                                                      data['memory']['ram']['active'],
+                                                      data['memory']['ram']['inactive'],
+                                                      data['memory']['ram']['buffers'],
+                                                      data['memory']['ram']['cached'],
+                                                      data['memory']['ram']['shared'],
+                                                      data['memory']['ram']['total'],
+                                                      data['memory']['swap']['percent'],
+                                                      data['memory']['swap']['used'],
+                                                      data['memory']['swap']['total'])
 
-                            # insert CPU data to SQL db
-                            db_manager.insert_cpu_data(cur, db_prefix, con, serv.name, serv.id, 1,
-                                                       data['cpu']['percent'])
+                        # log if RAM/swap is 90% or above
+                        if data['memory']['ram']['percent'] >= 90:
+                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                       'High RAM usage: {}%'.format(
+                                                           data['memory']['ram']['percent']))
+                        if data['memory']['swap']['percent'] >= 90:
+                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                       'High swap usage: {}%'.format(
+                                                           data['memory']['swap']['percent']))
 
-                            # log if CPU is 90% or above
-                            if data['cpu']['percent'] >= 90:
-                                db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                           'High CPU usage: {}%'.format(data['cpu']['percent']))
+                        # insert CPU data to SQL db
+                        db_manager.insert_cpu_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
+                                                   data['cpu']['percent'])
 
-                            # insert network data to SQL db
-                            for net_nic in data['network']:
-                                db_manager.insert_net_data(cur, db_prefix, con, serv.name, serv.id, 1,
-                                                           net_nic['name'],
-                                                           net_nic['sent'],
-                                                           net_nic['received'])
+                        # log if CPU is 90% or above
+                        if data['cpu']['percent'] >= 90:
+                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                       'High CPU usage: {}%'.format(data['cpu']['percent']))
 
-                            # insert load average data to SQL db
-                            db_manager.insert_load_data(cur, db_prefix, con, serv.name, serv.id, 1,
-                                                        data['load']['1min'],
-                                                        data['load']['5min'],
-                                                        data['load']['15min'])
-                            
-                            # log if load average is 1.00 or above
-                            if data['load']['1min'] is not None:
-                                if data['load']['1min'] > 1.00:
-                                    db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                               'High 1m load usage: {}'.format(data['load']['1min']))
-                                elif data['load']['5min'] > 1.00:
-                                    db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                               'High 5m load usage: {}'.format(data['load']['5min']))
-                                elif data['load']['15min'] > 1.00:
-                                    db_manager.insert_log_data(con, cur, serv.name, 0,
-                                                               'High 15m load usage: {}'.format(data['load']['15min']))
+                        # insert network data to SQL db
+                        for net_nic in data['network']:
+                            db_manager.insert_net_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
+                                                       net_nic['name'],
+                                                       net_nic['sent'],
+                                                       net_nic['received'])
 
-                            log('INFO', 'CM', 'Retrieved and logged data for server [{}]!'.format(serv.name))
-                    
-                    except pymysql.Error:
-                        log('ERROR', 'CM', 'Unable to access server [{}]! Please make sure the port is open on that '
-                                           'server!'.format(serv.name))
-                else:
-                    db_manager.insert_ping_data(cur, db_prefix, con, serv.name, serv.id, 0)
-                    db_manager.insert_memory_data(cur, db_prefix, con, serv.name, serv.id, 0)
-                    db_manager.insert_cpu_data(cur, db_prefix, con, serv.name, serv.id, 0)
-                    db_manager.insert_net_data(cur, db_prefix, con, serv.name, serv.id, 0)
-                    db_manager.insert_load_data(cur, db_prefix, con, serv.name, serv.id, 0)
-                    db_manager.insert_disk_io_data(cur, db_prefix, con, serv.name, serv.id, 0)
-                    db_manager.insert_log_data(cur, db_prefix, con, serv.name, 1, 'Server not responding to ping')
-                    log('WARN', 'CM', 'Server [{}] is not responding, skipping...'.format(serv.name))
+                        # insert load average data to SQL db
+                        db_manager.insert_load_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
+                                                    data['load']['1min'],
+                                                    data['load']['5min'],
+                                                    data['load']['15min'])
+
+                        # log if load average is 1.00 or above
+                        if data['load']['1min'] is not None:
+                            if data['load']['1min'] > 1.00:
+                                db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                           'High 1m load usage: {}'.format(data['load']['1min']))
+                            elif data['load']['5min'] > 1.00:
+                                db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                           'High 5m load usage: {}'.format(data['load']['5min']))
+                            elif data['load']['15min'] > 1.00:
+                                db_manager.insert_log_data(con, cur, serv.get_name(), 0,
+                                                           'High 15m load usage: {}'.format(data['load']['15min']))
+
+                        log('INFO', 'CM', 'Retrieved and logged data for server [{}]!'.format(serv.get_name()))
+
+                except pymysql.Error:
+                    log('ERROR', 'CM', 'Unable to access server [{}]! Please make sure the port is open on that '
+                                       'server!'.format(serv.get_name()))
+            else:
+                db_manager.insert_ping_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
+                db_manager.insert_memory_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
+                db_manager.insert_cpu_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
+                db_manager.insert_net_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
+                db_manager.insert_load_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
+                db_manager.insert_disk_io_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
+                db_manager.insert_log_data(cur, db_prefix, con, serv.get_name(), 1, 'Server not responding to ping')
+                log('WARN', 'CM', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
         except pymysql.Error as ex:
             log('ERROR', 'CM', 'Problem when trying to retrieve data from SQL database! STACKTRACE: {}'
                 .format(ex.args[1]))
             log('ERROR', 'CM', 'Force closing program...')
             exit()
-        time.sleep(time)
+        #time.sleep(time)
+        break
 
 
 # retrieve now status for index.html page
@@ -664,7 +683,7 @@ if __name__ == '__main__':
         con, cur = db_manager.connect_to_db(db_host, db_port, db_user, db_pass, db_name)
 
         # NSA'ing through tables in database
-        db_manager.check_tables(con, cur)
+        db_manager.check_tables(con, cur, db_prefix)
     except pymysql.Error as e:
         log('ERROR', 'CM', 'Error when trying to connect to the database OR check/create table! STACKTRACE: {}'
             .format(e.args[1]))
@@ -676,6 +695,7 @@ if __name__ == '__main__':
     thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
     # thd.start()
+    scrape_data(interval_time)
     log('INFO', 'CM', 'Scrape thread started!')
 
     # start Flask service
