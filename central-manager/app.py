@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, jsonify, request
+from subprocess import check_output, CalledProcessError
 from configparser import ConfigParser
 from warnings import filterwarnings
 from urllib.request import urlopen
+from flask import Flask, jsonify
 from datetime import datetime
 from threading import Thread
-import subprocess
 import platform
 import pymysql
 import json
+import re
 
 from bin.db_management import DBManagement
 from bin.server_obj import Server
@@ -85,7 +86,7 @@ logger = None
 try:
     logger = open(log_file, 'a')
 except IOError as e:
-    print('FILE ERROR: Unable to open log file! STACETRACE: {}'.format(e.args[1]))
+    print('FILE ERROR: Unable to open log file! STACKTRACE: {}'.format(e.args[1]))
     print('FILE ERROR: Force closing program...')
     exit()
 
@@ -128,31 +129,18 @@ def ping_server(host):
     # ping server
     try:
         if 'Windows' in platform.platform():
-            ping_result = subprocess.Popen(
-                ['ping', '-n', '1', '{}'.format(host)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+            ping_result = check_output(['ping', '-n', '1', '{}'.format(host)]).decode("utf-8")
         else:
-            ping_result = subprocess.Popen(
-                ['ping', '-c', '1', '{}'.format(host)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
+            ping_result = check_output(['ping', '-c', '1', '{}'.format(host)]).decode("utf-8")
 
         if 'time<' in ping_result:
-            ping_result = float(result[result.find('time<') + 5:result.find(' ms')])
+            ping_result = re.search('time<([\d.]+)', ping_result).group(1)
         elif 'time=' in ping_result:
-            ping_result = float(result[result.find('time=') + 5:result.find(' ms')])
+            ping_result = re.search('time=([\d.]+)', ping_result).group(1)
         else:
             ping_result = -1
-        print(ping_result)
-        return -1
-    except subprocess.CalledProcessError:
-        return -1
-    except ValueError:
-        return -1
-    except Exception:
+        return ping_result
+    except CalledProcessError:
         return -1
 
 
@@ -168,7 +156,7 @@ def scrape_data(time):
 
             # go through each server and scrape data
             #for serv in servers:
-            serv = Server(1, 'UbuntuS-MAIN', 'GN', 0, 'ubuntus-main.watson.io', 5000)
+            serv = Server(1, 'UbuntuS-MAIN', 'GN', 0, 'ubuntus.watson.io', 5000)
             ping_result = ping_server(serv.get_host())
             if ping_result is not -1:
                 try:
