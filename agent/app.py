@@ -240,7 +240,7 @@ def web_all():
             {
                 'name': name,
                 'sent': sent,
-                'recieved': recv
+                'received': recv
             }
             for name, sent, recv in zip(nic_names, nic_sent, nic_recvs)
         ],
