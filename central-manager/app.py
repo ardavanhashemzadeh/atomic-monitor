@@ -156,17 +156,17 @@ def scrape_data(time):
 
             # go through each server and scrape data
             #for serv in servers:
-            serv = Server(1, 'UbuntuS-MAIN', 'GN', 0, 'ubuntus.watson.io', 5000)
+            serv = Server(1, 'UbuntuS-MAIN', 'GN', 0, 'ubuntus-main.watson.io', 5000)
             ping_result = ping_server(serv.get_host())
             if ping_result is not -1:
                 try:
                     # sniff up data from a server
-                    with urlopen('http://{}:{}/'.format(serv.get_host(), serv.get_port)) as url:
+                    with urlopen('http://{}:{}/all'.format(serv.get_host(), serv.get_port())) as url:
                         data = json.loads(url.read().decode())
 
                         # insert data to SQL db
                         db_manager.insert_ping_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1, ping_result)
-                        if ping_result > 200:
+                        if int(ping_result) > 200:
                             db_manager.insert_log_data(con, cur, serv.get_name(), 0,
                                                        'Slow ping response: {} ms'.format(ping_result))
 
@@ -174,11 +174,6 @@ def scrape_data(time):
                         db_manager.insert_memory_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
                                                       data['memory']['ram']['percent'],
                                                       data['memory']['ram']['used'],
-                                                      data['memory']['ram']['active'],
-                                                      data['memory']['ram']['inactive'],
-                                                      data['memory']['ram']['buffers'],
-                                                      data['memory']['ram']['cached'],
-                                                      data['memory']['ram']['shared'],
                                                       data['memory']['ram']['total'],
                                                       data['memory']['swap']['percent'],
                                                       data['memory']['swap']['used'],
@@ -217,14 +212,15 @@ def scrape_data(time):
                                                     data['load']['15min'])
 
                         # log if load average is 1.00 or above
-                        if data['load']['1min'] is not None:
-                            if data['load']['1min'] > 1.00:
+                        print(data['load']['1min'])
+                        if data['load']['1min'] != "NULL":
+                            if float(data['load']['1min']) > 1.00:
                                 db_manager.insert_log_data(con, cur, serv.get_name(), 0,
                                                            'High 1m load usage: {}'.format(data['load']['1min']))
-                            elif data['load']['5min'] > 1.00:
+                            elif float(data['load']['5min']) > 1.00:
                                 db_manager.insert_log_data(con, cur, serv.get_name(), 0,
                                                            'High 5m load usage: {}'.format(data['load']['5min']))
-                            elif data['load']['15min'] > 1.00:
+                            elif float(data['load']['15min']) > 1.00:
                                 db_manager.insert_log_data(con, cur, serv.get_name(), 0,
                                                            'High 15m load usage: {}'.format(data['load']['15min']))
 
@@ -239,7 +235,6 @@ def scrape_data(time):
                 db_manager.insert_cpu_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
                 db_manager.insert_net_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
                 db_manager.insert_load_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
-                db_manager.insert_disk_io_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
                 db_manager.insert_log_data(cur, db_prefix, con, serv.get_name(), 1, 'Server not responding to ping')
                 log('WARN', 'CM', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
         except pymysql.Error as ex:
