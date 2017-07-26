@@ -141,19 +141,6 @@ class DBManagement:
                         PRIMARY KEY(id));""".format(db_prefix))
             log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_load_average table.'.format(db_prefix))
 
-            # create/check disk logs table
-            cur.execute("""CREATE TABLE IF NOT EXISTS {}_disk (
-                        id BIGINT NOT NULL AUTO_INCREMENT,
-                        server_id INTEGER NOT NULL,
-                        stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        status CHAR(1),
-                        device VARCHAR(50),
-                        percent BIGINT,
-                        used BIGINT,
-                        total BIGINT,
-                        PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_disk table.'.format(db_prefix))
-
             # submit changes to SQL server
             con.commit()
             log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Database prepared!')
@@ -163,74 +150,63 @@ class DBManagement:
     # insert new ping data to SQL database
     def insert_log_data(self, cur, db_prefix, con, server_name, typ, message):
         try:
-            cur.execute('INSERT INTO {}_logs (server_name, type, msg) '
-                        'VALUES (?, ?, ?)'.format(db_prefix), server_name, typ, message)
+            cur.execute('INSERT INTO {}_log (server_name, type, msg) VALUES (\'{}\', {}, \'{}\')'
+                        .format(db_prefix, server_name, typ, message))
             con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [error log] data for server [{}] to SQL '
                                                              'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
 
     # insert new ping data to SQL database
-    def insert_ping_data(self, cur, db_prefix, con, server_name, server_id, status, ping=None):
+    def insert_ping_data(self, cur, db_prefix, con, server_name, server_id, status, ping=0):
         try:
-            cur.execute('INSERT INTO {}_ping (server_id, status, ping) '
-                        'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, ping)
+            cur.execute('INSERT INTO {}_ping (server_id, status, ping) VALUES ({}, {}, {})'
+                        .format(db_prefix, server_id, status, ping))
             con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [ping] data for server [{}] to SQL '
                                                              'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
 
     # insert new memory data to SQL database
-    def insert_memory_data(self, cur, db_prefix, con, server_name, server_id, status, ram_percent=None, ram_used=None,
-                           ram_total=None, swap_percent=None, swap_used=None, swap_total=None):
+    def insert_memory_data(self, cur, db_prefix, con, server_name, server_id, status, ram_percent=0, ram_used=0,
+                           ram_total=0, swap_percent=0, swap_used=0, swap_total=0):
         try:
             cur.execute('INSERT INTO {}_memory (server_id, status, ram_percent, ram_used, ram_total, swap_percent, '
-                        'swap_used, swap_total) '
-                        'VALUES (?, ?, ?, ?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, ram_percent, ram_used,
-                        ram_total, swap_percent, swap_used, swap_total)
+                        'swap_used, swap_total) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'
+                        .format(db_prefix, server_id, status, ram_percent, ram_used, ram_total, swap_percent, swap_used,
+                                swap_total))
             con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [memory] data for server [{}] to SQL '
                                                              'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
 
     # insert new CPU data to SQL database
-    def insert_cpu_data(self, cur, db_prefix, con, server_name, server_id, status, cpu_percent=None):
+    def insert_cpu_data(self, cur, db_prefix, con, server_name, server_id, status, cpu_percent=0):
         try:
-            cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) '
-                        'VALUES (?, ?, ?)'.format(db_prefix), server_id, status, cpu_percent)
+            cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) VALUES ({}, {}, {})'
+                        .format(db_prefix, server_id, status, cpu_percent))
             con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [cpu] data for server [{}] to SQL '
                                                              'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
 
     # insert new network data to SQL database
-    def insert_net_data(self, cur, db_prefix, con, server_name, server_id, status, name=None, sent=None, received=None):
+    def insert_net_data(self, cur, db_prefix, con, server_name, server_id, status, name='', sent=0, received=0):
         try:
-            cur.execute('INSERT INTO {}_network (server_id, status, name, sent, received) '
-                        'VALUES (?, ?, ?, ?)'.format(db_prefix), server_id, status, name, sent, received)
+            cur.execute('INSERT INTO {}_network (server_id, status, name, sent, received) VALUES ({}, {}, \'{}\', {}, '
+                        '{})'.format(db_prefix, server_id, status, name, sent, received))
             con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [network] data for server [{}] to SQL '
                                                              'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
 
     # insert new network data to SQL database
-    def insert_load_data(self, cur, db_prefix, con, server_name, server_id, status, one_avg=None, five_avg=None,
-                         fifteen_avg=None):
+    def insert_load_data(self, cur, db_prefix, con, server_name, server_id, status, one_avg=0, five_avg=0,
+                         fifteen_avg=0):
         try:
-            cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) '
-                        'VALUES (?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, one_avg, five_avg, fifteen_avg)
+            cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) VALUES ({}, {}, {}, '
+                        '{}, {})'.format(db_prefix, server_id, status, one_avg, five_avg, fifteen_avg))
             con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [load] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
-
-    # insert new disk data to SQL database
-    def insert_disk_data(self, cur, db_prefix, con, server_name, server_id, status, device=None, percent=None,
-                         used=None, total=None):
-        try:
-            cur.execute('INSERT INTO {}_disk (server_id, status, device, percent, used, total) '
-                        'VALUES (?, ?, ?, ?, ?, ?)'.format(db_prefix), server_id, status, device, percent, used, total)
-            con.commit()
-        except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [disk] data for server [{}] to SQL '
                                                              'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
