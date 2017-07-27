@@ -135,9 +135,9 @@ class DBManagement:
                         server_id INTEGER NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
-                        1m_avg FLOAT(5,2),
-                        5m_avg FLOAT(5,2),
-                        15m_avg FLOAT(5,2),
+                        1m_avg DECIMAL(5,1),
+                        5m_avg DECIMAL(5,1),
+                        15m_avg DECIMAL(5,1),
                         PRIMARY KEY(id));""".format(db_prefix))
             log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_load_average table.'.format(db_prefix))
 

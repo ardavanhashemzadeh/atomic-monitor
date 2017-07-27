@@ -32,8 +32,6 @@ def update_nics():
 
             current_nic_status.append(NIC(nic_names[i], diff_sent, diff_recv))
 
-        old_status = new_stats
-
         time.sleep(1)
 
 
