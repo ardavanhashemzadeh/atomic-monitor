@@ -8,6 +8,7 @@ from datetime import datetime
 from threading import Thread
 import platform
 import pymysql
+import time
 import json
 import re
 
@@ -109,7 +110,7 @@ def log(level, typ, message):
     except IOError as ex:
         print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
                                 'ERROR',
-                                'AGENT',
+                                'CM',
                                 'Unable to log to file! STACKTRACE: {}'.format(ex.args[1])))
 
 
@@ -145,7 +146,7 @@ def ping_server(host):
 
 
 # scrape data from each agent (server)
-def scrape_data(time):
+def scrape_data(time_interval):
     while True:
         # retrieve list of servers
         servers = list()
@@ -212,7 +213,6 @@ def scrape_data(time):
                                                     data['load']['15min'])
 
                         # log if load average is 1.00 or above
-                        print(data['load']['1min'])
                         if data['load']['1min'] != "NULL":
                             if float(data['load']['1min']) > 1.00:
                                 db_manager.insert_log_data(con, cur, serv.get_name(), 0,
@@ -224,11 +224,11 @@ def scrape_data(time):
                                 db_manager.insert_log_data(con, cur, serv.get_name(), 0,
                                                            'High 15m load usage: {}'.format(data['load']['15min']))
 
-                        log('INFO', 'CM', 'Retrieved and logged data for server [{}]!'.format(serv.get_name()))
+                        log('INFO', 'SCRAPE', 'Retrieved and logged data for server [{}]!'.format(serv.get_name()))
 
                 except pymysql.Error:
-                    log('ERROR', 'CM', 'Unable to access server [{}]! Please make sure the port is open on that '
-                                       'server!'.format(serv.get_name()))
+                    log('ERROR', 'SCRAPE', 'Unable to access server [{}]! Please make sure the port is open on that '
+                                           'server!'.format(serv.get_name()))
             else:
                 db_manager.insert_ping_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
                 db_manager.insert_memory_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
@@ -236,14 +236,14 @@ def scrape_data(time):
                 db_manager.insert_net_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
                 db_manager.insert_load_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
                 db_manager.insert_log_data(cur, db_prefix, con, serv.get_name(), 1, 'Server not responding to ping')
-                log('WARN', 'CM', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
+                log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
         except pymysql.Error as ex:
-            log('ERROR', 'CM', 'Problem when trying to retrieve data from SQL database! STACKTRACE: {}'
+            log('ERROR', 'SQL', 'Problem when trying to retrieve data from SQL database! STACKTRACE: {}'
                 .format(ex.args[1]))
             log('ERROR', 'CM', 'Force closing program...')
             exit()
-        #time.sleep(time)
-        break
+        time.sleep(time_interval)
+        #break
 
 
 # retrieve now status for index.html page
@@ -668,18 +668,18 @@ if __name__ == '__main__':
         # NSA'ing through tables in database
         db_manager.check_tables(con, cur, db_prefix)
     except pymysql.Error as e:
-        log('ERROR', 'CM', 'Error when trying to connect to the database OR check/create table! STACKTRACE: {}'
+        log('ERROR', 'SQL', 'Error when trying to connect to the database OR check/create table! STACKTRACE: {}'
             .format(e.args[1]))
         log('ERROR', 'CM', 'Force closing program...')
         exit()
 
     # start scraping thread job!
-    log('INFO', 'CM', 'Starting scraping thread...')
+    log('INFO', 'SCRAPE', 'Starting scraping thread...')
     thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
     # thd.start()
     scrape_data(interval_time)
-    log('INFO', 'CM', 'Scrape thread started!')
+    log('INFO', 'SCRAPE', 'Scrape thread started!')
 
     # start Flask service
     log('INFO', 'CM', 'Starting Flask service...')

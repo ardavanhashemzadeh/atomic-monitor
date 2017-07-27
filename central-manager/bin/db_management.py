@@ -28,15 +28,14 @@ class DBManagement:
     def connect_to_db(self, db_host, db_port, db_user, db_pass, db_name):
         try:
             # connect to the database
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Connecting to the database...')
+            log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Connecting to the database...')
             con = pymysql.connect(host=db_host,
                                   port=int(db_port),
                                   user=db_user,
                                   passwd=db_pass,
                                   db=db_name)
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Successfully connected to the database!')
+            log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Successfully connected to the database!')
 
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Preparing database...')
             cur = con.cursor()
 
             return con, cur
@@ -44,6 +43,8 @@ class DBManagement:
             raise pymysql.Error(e.args[1])
 
     def check_tables(self, con, cur, db_prefix):
+        log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Preparing database...')
+        log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Checking all tables...')
         try:
             # create/check servers table
             # type:
@@ -67,7 +68,6 @@ class DBManagement:
                         hostname VARCHAR(255) NOT NULL,
                         port SMALLINT NOT NULL,
                         PRIMARY KEY(name));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_server table.'.format(db_prefix))
 
             # create/check error logs table
             # type:
@@ -80,7 +80,6 @@ class DBManagement:
                         type CHAR(1) NOT NULL,
                         msg VARCHAR(500) NOT NULL,
                         PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_log table.'.format(db_prefix))
 
             # create/check ping logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_ping (
@@ -88,9 +87,8 @@ class DBManagement:
                         server_id INTEGER NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
-                        ping FLOAT(100,2),
+                        ping INT,
                         PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_ping table.'.format(db_prefix))
 
             # create/check memory logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_memory (
@@ -105,7 +103,6 @@ class DBManagement:
                         swap_used FLOAT(100,2),
                         swap_total FLOAT(100,2),
                         PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_memory table.'.format(db_prefix))
 
             # create/check CPU logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_cpu (
@@ -115,7 +112,6 @@ class DBManagement:
                         status CHAR(1),
                         cpu_percent FLOAT(4,1),
                         PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_cpu table.'.format(db_prefix))
 
             # create/check network logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_network (
@@ -127,7 +123,6 @@ class DBManagement:
                         sent BIGINT,
                         received BIGINT,
                         PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_network table.'.format(db_prefix))
 
             # create/check load logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_load_average (
@@ -139,11 +134,11 @@ class DBManagement:
                         5m_avg FLOAT(5,2),
                         15m_avg FLOAT(5,2),
                         PRIMARY KEY(id));""".format(db_prefix))
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Checking {}_load_average table.'.format(db_prefix))
 
             # submit changes to SQL server
             con.commit()
-            log(self.LOG_FORMAT, self.logger, 'INFO', 'CM', 'Database prepared!')
+            log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'All tables checked!')
+            log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Database prepared!')
         except Exception as e:
             raise pymysql.Error(e.args[1])
 
@@ -154,8 +149,9 @@ class DBManagement:
                         .format(db_prefix, server_name, typ, message))
             con.commit()
         except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [error log] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
+            log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [error log] data for server [{}] to '
+                                                              'SQL database! STACKTRACE: {}'.format(server_name,
+                                                                                                    ex.args[1]))
 
     # insert new ping data to SQL database
     def insert_ping_data(self, cur, db_prefix, con, server_name, server_id, status, ping=0):
@@ -164,8 +160,9 @@ class DBManagement:
                         .format(db_prefix, server_id, status, ping))
             con.commit()
         except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [ping] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
+            log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [ping] data for server [{}] to SQL '
+                                                              'database! STACKTRACE: {}'.format(server_name,
+                                                                                                ex.args[1]))
 
     # insert new memory data to SQL database
     def insert_memory_data(self, cur, db_prefix, con, server_name, server_id, status, ram_percent=0, ram_used=0,
@@ -177,8 +174,9 @@ class DBManagement:
                                 swap_total))
             con.commit()
         except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [memory] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
+            log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [memory] data for server [{}] to SQL '
+                                                              'database! STACKTRACE: {}'.format(server_name,
+                                                                                                ex.args[1]))
 
     # insert new CPU data to SQL database
     def insert_cpu_data(self, cur, db_prefix, con, server_name, server_id, status, cpu_percent=0):
@@ -187,8 +185,9 @@ class DBManagement:
                         .format(db_prefix, server_id, status, cpu_percent))
             con.commit()
         except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [cpu] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
+            log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [cpu] data for server [{}] to SQL '
+                                                              'database! STACKTRACE: {}'.format(server_name,
+                                                                                                ex.args[1]))
 
     # insert new network data to SQL database
     def insert_net_data(self, cur, db_prefix, con, server_name, server_id, status, name='', sent=0, received=0):
@@ -197,8 +196,9 @@ class DBManagement:
                         '{})'.format(db_prefix, server_id, status, name, sent, received))
             con.commit()
         except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [network] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
+            log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [network] data for server [{}] to SQL '
+                                                              'database! STACKTRACE: {}'.format(server_name,
+                                                                                                ex.args[1]))
 
     # insert new network data to SQL database
     def insert_load_data(self, cur, db_prefix, con, server_name, server_id, status, one_avg=0, five_avg=0,
@@ -208,5 +208,6 @@ class DBManagement:
                         '{}, {})'.format(db_prefix, server_id, status, one_avg, five_avg, fifteen_avg))
             con.commit()
         except pymysql.Error as ex:
-            log(self.LOG_FORMAT, self.logger, 'ERROR', 'CM', 'Unable to insert [load] data for server [{}] to SQL '
-                                                             'database! STACKTRACE: {}'.format(server_name, ex.args[1]))
+            log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [load] data for server [{}] to SQL '
+                                                              'database! STACKTRACE: {}'.format(server_name,
+                                                                                                ex.args[1]))
