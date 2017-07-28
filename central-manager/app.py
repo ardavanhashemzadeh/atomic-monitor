@@ -157,7 +157,7 @@ def scrape_data(time_interval):
 
             # go through each server and scrape data
             #for serv in servers:
-            serv = Server(1, 'UbuntuS-MAIN', 'GN', 0, 'ubuntus-main.watson.io', 5000)
+            serv = Server(1, 'PROXMOX', 'GN', 0, 'proxmox.watson.io', 5000)
             ping_result = ping_server(serv.get_host())
             if ping_result is not -1:
                 try:
@@ -252,61 +252,61 @@ def web_home():
     # retrieve list of servers
     servers = list()
     try:
-        for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
-            server = Server(row[0], row[1], row[2])
-            hostname = row[3]
-            port = row[4]
-            
-            # check if server is online & responding
-            ping_result = ping_server(hostname)
-            if ping_result is not -1:
+        #for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
+        #    server = Server(row[0], row[1], row[2])
+        #    hostname = row[3]
+        #    port = row[4]
+        server = Server(1, 'PROXMOX', 'GN', 0, 'proxmox.watson.io', 5000)
+        # check if server is online & responding
+        ping_result = ping_server(server.get_host())
+        if ping_result is not -1:
 
-                # retrieve now status from the agent
-                with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
-                    r = json.loads(url.read().decode())
-                    cpu_percent = r['cpu']['percent']
-                    ram_percent = r['ram']['percent']
-                    swap_percent = r['swap']['percent']
-                    boot_timestamp = r['boot']['timestamp']
-                    disk_status = ''
-                    disk_percent = 0
-                    for disk in r['disks']:
-                        if 70 <= disk['percent'] < 90:
-                            disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
-                            disk_percent = disk['percent']
-                            break
-                        elif disk['percent'] >= 90:
-                            disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
-                            disk_percent = disk['percent']
-                            break
-                    
-                    # assign them to HomeServer object
-                    server.set_online(True)
-                    server.set_boottime(boot_timestamp)
-                    server.set_ping(ping_result)
-                    server.set_cpu(cpu_percent)
-                    server.set_ram(ram_percent)
-                    server.set_swap(swap_percent)
-                    server.set_disk_status(disk_status)
-                    server.set_disk_percent(disk_percent)
+            # retrieve now status from the agent
+            with urlopen('http://{}:{}/now'.format(server.get_host(), server.get_port())) as url:
+                r = json.loads(url.read().decode())
+                cpu_percent = r['cpu']['percent']
+                ram_percent = r['ram']['percent']
+                swap_percent = r['swap']['percent']
+                boot_timestamp = r['boot']['timestamp']
+                disk_status = ''
+                disk_percent = 0
+                for disk in r['disks']:
+                    if 70 <= disk['percent'] < 90:
+                        disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
+                        disk_percent = disk['percent']
+                        break
+                    elif disk['percent'] >= 90:
+                        disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
+                        disk_percent = disk['percent']
+                        break
 
-                    # add to the list
-                    servers.append(server)
-
-            else:
-                # assign empty values to HomeServer object
+                # assign them to HomeServer object
                 server.set_online(True)
-                server.set_boottime(0)
-                server.set_ping(0)
-                server.set_cpu(0)
-                server.set_ram(0)
-                server.set_swap(0)
-                server.set_disk_status('Server not responding')
-                server.set_disk_percent(-1)
-                
-                # add to the list   
-                servers.append(server)
-        
+                server.set_boottime(boot_timestamp)
+                server.set_ping(ping_result)
+                server.set_cpu(cpu_percent)
+                server.set_ram(ram_percent)
+                server.set_swap(swap_percent)
+                server.set_disk_status(disk_status)
+                server.set_disk_percent(disk_percent)
+
+                # add to the list
+                #servers.append(server)
+
+        else:
+            # assign empty values to HomeServer object
+            server.set_online(True)
+            server.set_boottime(0)
+            server.set_ping(0)
+            server.set_cpu(0)
+            server.set_ram(0)
+            server.set_swap(0)
+            server.set_disk_status('Server not responding')
+            server.set_disk_percent(-1)
+
+            # add to the list
+            #servers.append(server)
+
         # convert HomeServer list object into json_data
         json_data = {
             'status': 'good',
@@ -678,7 +678,7 @@ if __name__ == '__main__':
     thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
     # thd.start()
-    scrape_data(interval_time)
+    #scrape_data(interval_time)
     log('INFO', 'SCRAPE', 'Scrape thread started!')
 
     # start Flask service
