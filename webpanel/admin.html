@@ -38,6 +38,23 @@
 		<div id='body'>
             <section id='admin-panel'>
                 <h2 class='title'>Admin Panel</h2>
+				<section id='status'>
+					<div class='status-box good'>
+						<h2>6</h2>
+						<h4>Active servers</h4>
+						<h5>Servers Total: 15</h5>
+					</div>
+					<div class='status-box disabled'>
+						<h2>2</h2>
+						<h4>Disabled servers</h4>
+						<h5>UbuntuS-MAIN, UbuntuS-DB, Firewall</h5>
+					</div>
+					<div class='status-box tofix'>
+						<h2>0</h2>
+						<h4>Servers in maintenance</h4>
+						<h5>N/A</h5>
+					</div>
+				</section>
 				<div class='menu'>
                     <button id='agents-tab' class='tab active' onclick='changeSection("agents-tab", "first_tab")'>Agents</button>
                     <button id='notifications-tab' class='tab' onclick='changeSection("notifications-tab", "second_tab")'>Notifications</button>
@@ -45,7 +62,45 @@
 				</div>
 				<div id='contents'>
 					<div id='first_tab' class='tab-section'>
-						<h3>AGENTS</h3>
+						<button onclick='addAgent()'><i class="fa fa-plus" aria-hidden="true"></i> Add Server</button>
+						<div id='agents'>
+							<div class='agent'>
+								<h3 class='id'>#1</h3>
+								<div class='mode'><span class='good'>active</span></div>
+								<div class='name'>UbuntuS-MAIN</div>
+								<div class='host-port'>localhost:5001</div>
+								<div class='status'><span class='good'>online</span></div>
+								<div class='version'><span class='disabled'>agent v1.3</span></div>
+								<div class='controls'>
+									<button class='edit' onclick='editAgent("1")'><i class="fa fa-cog" aria-hidden="true"></i> Edit</button>
+									<button class='remove' onclick='removeAgent("1")'><i class="fa fa-trash" aria-hidden="true"></i> Remove</button>
+								</div>
+							</div>
+							<div class='agent'>
+								<h3 class='id'>#2</h3>
+								<div class='mode'><span class='good'>active</span></div>
+								<div class='name'>UbuntuS-DB</div>
+								<div class='host-port'>ubuntus-db.watson.io:5000</div>
+								<div class='status'><span class='good'>online</span></div>
+								<div class='version'><span class='disabled'>agent v1.3</span></div>
+								<div class='controls'>
+									<button class='edit' onclick='editAgent("1")'><i class="fa fa-cog" aria-hidden="true"></i> Edit</button>
+									<button class='remove' onclick='removeAgent("1")'><i class="fa fa-trash" aria-hidden="true"></i> Remove</button>
+								</div>
+							</div>
+							<div class='agent'>
+								<h3 class='id'>#3</h3>
+								<div class='mode'><span class='disabled'>disabled</span></div>
+								<div class='name'>UbuntuS-MM</div>
+								<div class='host-port'>ubuntus-mm.watson.io:5001</div>
+								<div class='status'><span class='bad'>offline</span></div>
+								<div class='version'><span class='bad'>agent v1.1</span></div>
+								<div class='controls'>
+									<button class='edit' onclick='editAgent("1")'><i class="fa fa-cog" aria-hidden="true"></i> Edit</button>
+									<button class='remove' onclick='removeAgent("1")'><i class="fa fa-trash" aria-hidden="true"></i> Remove</button>
+								</div>
+							</div>
+						</div>
 					</div>
 					<div id='second_tab' class='tab-section'>
 						<h3>NOTIFICATIONS</h3>
