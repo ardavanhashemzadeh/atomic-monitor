@@ -35,15 +35,3 @@ class Device:
         self.percent = _percent
         self.used = _used
         self.total = _total
-
-    def get_name(self):
-        return self.name
-
-    def get_percent(self):
-        return self.percent
-
-    def get_used(self):
-        return self.used
-
-    def get_total(self):
-        return self.total

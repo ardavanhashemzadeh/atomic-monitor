@@ -62,15 +62,3 @@ class NIC:
         self.name = _name
         self.sent = _sent
         self.recv = _recv
-
-    # name of NIC
-    def get_name(self):
-        return self.name
-
-    # num of bytes sent
-    def get_sent(self):
-        return self.sent
-
-    # num of bytes received
-    def get_recv(self):
-        return self.recv
