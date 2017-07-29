@@ -1,0 +1,3 @@
+Pace.start();
+
+Pace.stop();

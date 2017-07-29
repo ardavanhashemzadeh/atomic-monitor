@@ -326,17 +326,17 @@ div#body section#graphs div.menu button.active {
 div#body section#graphs div#contents {
 	padding-top: 10px;
 }
-div#body section#graphs div#contents div#general {
+div#body section#graphs div#contents div#first_tab {
 	text-align: center;
 }
-div#body section#graphs div#contents div#general div#graphs-col {
+div#body section#graphs div#contents div#first_tab div#graphs-col {
 	display: inline-block;
 	max-width: 900px;
 	width: 100%;
 	vertical-align: top;
 	margin: 0 8px;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph {
 	width: 100%;
 	margin: 10px 10px 20px 10px;
 	background-color: #424242;
@@ -346,14 +346,14 @@ div#body section#graphs div#contents div#general div#graphs-col div.content-grap
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-gage {
 	width: 180px;
 	position: absolute;
 	left: 0;
 	top: 0;
 	bottom: 0;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage h3 {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-gage h3 {
 	margin: 0;
 	text-align: left;
 	padding: 10px 10px 10px 12px;
@@ -362,12 +362,12 @@ div#body section#graphs div#contents div#general div#graphs-col div.content-grap
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-gage div {
 	width: 105px;
 	margin: 0 auto;
 	position: relative;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div span {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-gage div span {
 	position: absolute;
 	top: 41.5%;
 	left: 29%;
@@ -379,11 +379,11 @@ div#body section#graphs div#contents div#general div#graphs-col div.content-grap
 	font-weight: 400;
 	font-size: 1.2em;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div.gage-box {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-gage div.gage-box {
 	width: 160px;
 	position: relative;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-gage div.gage-box span {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-gage div.gage-box span {
 	position: absolute;
 	bottom: -20px;
 	left: 0;
@@ -394,10 +394,10 @@ div#body section#graphs div#contents div#general div#graphs-col div.content-grap
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-chart {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-chart {
 	padding-left: 180px;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-chart h3 {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-chart h3 {
 	margin: 0;
 	text-align: left;
 	padding: 10px 0 0 12px;
@@ -406,18 +406,18 @@ div#body section#graphs div#contents div#general div#graphs-col div.content-grap
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#general div#graphs-col div.content-graph div.graph-chart div {
+div#body section#graphs div#contents div#first_tab div#graphs-col div.content-graph div.graph-chart div {
 	height: 180px;
 	padding: 0 10px;
 }
-div#body section#graphs div#contents div#general div#specs-col {
+div#body section#graphs div#contents div#first_tab div#specs-col {
 	display: inline-block;
 	max-width: 550px;
 	width: 100%;
 	vertical-align: top;
 	margin: 0 8px;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph {
 	width: 100%;
 	margin: 10px 10px 20px 10px;
 	background-color: #424242;
@@ -427,14 +427,14 @@ div#body section#graphs div#contents div#general div#specs-col div.content-graph
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-gage {
 	width: 180px;
 	position: absolute;
 	left: 0;
 	top: 0;
 	bottom: 0;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage h3 {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-gage h3 {
 	margin: 0;
 	text-align: left;
 	padding: 10px 10px 10px 12px;
@@ -443,12 +443,12 @@ div#body section#graphs div#contents div#general div#specs-col div.content-graph
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-gage div {
 	width: 105px;
 	margin: 0 auto;
 	position: relative;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div span {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-gage div span {
 	position: absolute;
 	top: 41.5%;
 	left: 29%;
@@ -460,11 +460,11 @@ div#body section#graphs div#contents div#general div#specs-col div.content-graph
 	font-weight: 400;
 	font-size: 1.2em;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div.gage-box {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-gage div.gage-box {
 	width: 160px;
 	position: relative;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-gage div.gage-box span {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-gage div.gage-box span {
 	position: absolute;
 	bottom: -20px;
 	left: 0;
@@ -475,10 +475,10 @@ div#body section#graphs div#contents div#general div#specs-col div.content-graph
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-chart {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-chart {
 	padding-left: 0;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-chart h3 {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-chart h3 {
 	margin: 0;
 	text-align: left;
 	padding: 10px 0 0 12px;
@@ -487,11 +487,11 @@ div#body section#graphs div#contents div#general div#specs-col div.content-graph
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-graph div.graph-chart div {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-graph div.graph-chart div {
 	height: 180px;
 	padding: 0 10px;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table {
 	max-width: 850px;
 	width: 100%;
 	margin: 0 10px 20px 10px;
@@ -502,7 +502,7 @@ div#body section#graphs div#contents div#general div#specs-col div.content-table
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table h3 {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table h3 {
 	margin: 0;
 	color: #fff;
 	font-family: 'Roboto', sans-serif;
@@ -512,11 +512,11 @@ div#body section#graphs div#contents div#general div#specs-col div.content-table
 	text-align: left;
 	border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table {
 	width: 100%;
 	border-collapse: collapse;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td {
 	border: none;
 	border-top: 1px solid rgba(255,255,255,0.2);
 	font-family: 'Roboto', sans-serif;
@@ -526,26 +526,26 @@ div#body section#graphs div#contents div#general div#specs-col div.content-table
 	text-align: left;
 	padding: 6px 8px;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td.info {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td.info {
 	font-weight: 400;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td.device {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td.device {
 	width: 120px;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td.system-info {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td.system-info {
 	width: 140px;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td.size {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td.size {
 	width: 60px;
 	text-align: right;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td div.progress-bar {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td div.progress-bar {
 	background-color: #222;
 	width: 100%;
 	height: 15px;
 	position: relative;
 }
-div#body section#graphs div#contents div#general div#specs-col div.content-table table td div.progress-bar span {
+div#body section#graphs div#contents div#first_tab div#specs-col div.content-table table td div.progress-bar span {
 	display: block;
 	position: absolute;
 	left: 0;
@@ -555,10 +555,10 @@ div#body section#graphs div#contents div#general div#specs-col div.content-table
 
 
 /* servers -> alerts */
-div#body section#graphs div#contents div#alerts {
+div#body section#graphs div#contents div#second_tab {
 	text-align: center;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu {
+div#body section#graphs div#contents div#second_tab div#alerts-menu {
 	display: inline-block;
 	max-width: 300px;
 	width: 100%;
@@ -569,7 +569,7 @@ div#body section#graphs div#contents div#alerts div#alerts-menu {
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu h3 {
+div#body section#graphs div#contents div#second_tab div#alerts-menu h3 {
 	margin: 0;
 	text-align: left;
 	padding-bottom: 10px;
@@ -578,16 +578,16 @@ div#body section#graphs div#contents div#alerts div#alerts-menu h3 {
 	font-size: 1.1em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form {
 	text-align: left;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form label {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form label {
 	font-family: 'Roboto', sans-serif;
 	font-weight: 300;
 	font-size: 0.9em;
 	color: #fff;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form select {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form select {
 	display: block;
 	margin: 2px 0 5px 0;
 	background-color: #222;
@@ -600,10 +600,10 @@ div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form 
        -moz-box-sizing: border-box;
             box-sizing: border-box;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form select:hover {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form select:hover {
 	cursor: pointer;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form input {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form input {
 	display: block;
 	margin: 2px 0 5px 0;
 	background-color: #222;
@@ -616,7 +616,7 @@ div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form 
        -moz-box-sizing: border-box;
             box-sizing: border-box;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form button {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form button {
 	display: block;
 	width: 100px;
 	height: 34px;
@@ -627,17 +627,17 @@ div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form 
 	border: none;
 	margin: 10px auto 0 auto;
 }
-div#body section#graphs div#contents div#alerts div#alerts-menu div#alerts-form button:hover {
+div#body section#graphs div#contents div#second_tab div#alerts-menu div#alerts-form button:hover {
 	cursor: pointer;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log {
+div#body section#graphs div#contents div#second_tab div#alerts-log {
 	display: inline-block;
 	max-width: 900px;
 	width: 100%;
 	padding: 10px;
 	vertical-align: top;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log {
 	width: 100%;
 	background-color: #424242;
 	margin-bottom: 10px;
@@ -647,12 +647,12 @@ div#body section#graphs div#contents div#alerts div#alerts-log div.log {
 	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
 				0 2px 10px 0 rgba(0,0,0,0.2);
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-level {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-level {
 	display: inline-block;
 	vertical-align: middle;
 	width: 85px;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-level span {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-level span {
 	display: inline-block;
 	width: 55px;
 	padding: 4px 8px;
@@ -662,7 +662,7 @@ div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-l
 	border-radius: 5px;
 	text-align: center;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-server {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-server {
 	display: inline-block;
 	vertical-align: middle;
 	color: #fff;
@@ -670,7 +670,7 @@ div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-s
 	font-weight: 300;
 	width: 140px;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-reason {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-reason {
 	display: inline-block;
 	vertical-align: middle;
 	color: #fff;
@@ -678,7 +678,7 @@ div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-r
 	font-weight: 400;
 	width: 450px;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-timestamp {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-timestamp {
 	position: absolute;
 	right: 10px;
 	top: 1px;
@@ -690,13 +690,13 @@ div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-t
 	font-weight: 400;
 	font-size: 0.9em;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-timestamp:before {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-timestamp:before {
 	content: '';
 	display: inline-block;
 	height: 100%;
 	vertical-align: middle;
 }
-div#body section#graphs div#contents div#alerts div#alerts-log div.log div.log-timestamp span {
+div#body section#graphs div#contents div#second_tab div#alerts-log div.log div.log-timestamp span {
 	display: inline-block;
 	background-color: #222;
 	font-family: 'Roboto', sans-serif;
@@ -875,6 +875,195 @@ div#body div#full-alerts div#alerts-log div.log div.log-timestamp span {
 
 
 
+/* admin panel */
+div#body section#admin-panel {
+	padding: 0px 20px 20px 20px;
+	text-align: left;
+}
+div#body section#admin-panel h2.title {
+	margin: 0;
+	padding: 10px 10px 0 10px;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 2em;
+	color: #fff;
+}
+div#body section#admin-panel section#status {
+	padding: 0 0 10px 0;
+}
+div#body section#admin-panel div.menu {
+	overflow: hidden;
+	background-color: #131313;
+}
+div#body section#admin-panel div.menu button {
+	background-color: inherit;
+	float: left;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 10px 0;
+	width: 180px;
+	transition: 0.3s;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	font-size: 1em;
+}
+div#body section#admin-panel div.menu button:hover {
+	background-color: #353535;
+}
+div#body section#admin-panel div.menu button.active {
+	background-color: #353535;
+}
+div#body section#admin-panel div#contents {
+	padding-top: 10px;
+}
+div#body section#admin-panel div#contents div#first_tab {
+	padding: 0 10px;
+}
+div#body section#admin-panel div#contents div#first_tab button {
+	display: block;
+	width: 140px;
+	height: 34px;
+	background-color: #4CAF50;
+	color: #fff;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	border: none;
+	font-size: 0.9em;
+}
+div#body section#admin-panel div#contents div#first_tab button i {
+	margin-right: 2px;
+}
+div#body section#admin-panel div#contents div#first_tab button:hover {
+	cursor: pointer;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents {
+	text-align: center;
+	padding-top: 15px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent {
+	display: inline-block;
+	max-width: 1000px;
+	width: 100%;
+	padding: 10px;
+	vertical-align: top;
+	background-color: #424242;
+	margin-bottom: 10px;
+	position: relative;
+	text-align: left;
+	box-shadow: 0 2px 5px 0 rgba(0,0,0,0.2), 
+				0 2px 10px 0 rgba(0,0,0,0.2);
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent h3.id {
+	margin: 0;
+	display: inline-block;
+	vertical-align: middle;
+	color: #fff;
+    font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	width: 40px;
+	text-align: center;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.mode {
+	display: inline-block;
+	vertical-align: middle;
+	width: 90px;
+	margin-left: 10px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.mode span {
+	display: inline-block;
+    width: 60px;
+    padding: 4px 8px;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    border-radius: 5px;
+    text-align: center;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.name {
+	display: inline-block;
+	vertical-align: middle;
+	color: #fff;
+    font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	width: 150px;
+	margin-left: 10px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.host-port {
+	display: inline-block;
+	vertical-align: middle;
+	color: #fff;
+    font-family: 'Roboto', sans-serif;
+	font-weight: 300;
+	width: 250px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.status {
+	display: inline-block;
+	vertical-align: middle;
+	width: 85px;
+	margin-left: 10px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.status span {
+	display: inline-block;
+    width: 55px;
+    padding: 4px 8px;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    border-radius: 5px;
+    text-align: center;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.version {
+	display: inline-block;
+	vertical-align: middle;
+	width: 105px;
+	margin-left: 10px;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.version span {
+	display: inline-block;
+    width: 70px;
+    padding: 4px 8px;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+	border-radius: 5px;
+	font-size: 0.9em;
+	text-align: center;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.controls {
+	position: absolute;
+    right: 10px;
+    top: 1px;
+    bottom: 0;
+    max-width: 250px;
+    text-align: right;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.controls:before {
+	content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.controls button {
+	width: 100px;
+	display: inline-block;
+	margin-left: 5px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.controls button i {
+	margin-right: 2px;
+	position: relative;
+	top: -0.6px;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.controls button.edit {
+	background-color: #F57C00;
+}
+div#body section#admin-panel div#contents div#first_tab div#agents div.agent div.controls button.remove {
+	background-color: #E53935;
+}
 
 
 
