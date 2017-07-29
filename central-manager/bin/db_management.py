@@ -57,6 +57,7 @@ class DBManagement:
             # VM : Virtual Machine/Hypervisor Server
             # FS : File Sharing Server
             # SY : Security-Based Server
+            # MN : Monitoring-based Server
             # mode:
             # 0 : enabled
             # 1 : disabled
@@ -81,19 +82,25 @@ class DBManagement:
                         msg VARCHAR(500) NOT NULL,
                         PRIMARY KEY(id));""".format(db_prefix))
 
+            # status:
+            # 0: offline
+            # 1: online
             # create/check ping logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_ping (
                         id BIGINT NOT NULL AUTO_INCREMENT,
-                        server_id INTEGER NOT NULL,
+                        server_name VARCHAR(100) NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         ping INT,
                         PRIMARY KEY(id));""".format(db_prefix))
 
+            # status:
+            # 0: offline
+            # 1: online
             # create/check memory logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_memory (
                         id BIGINT NOT NULL AUTO_INCREMENT,
-                        server_id INTEGER NOT NULL,
+                        server_name VARCHAR(100) NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         ram_percent FLOAT(4,1),
@@ -104,19 +111,25 @@ class DBManagement:
                         swap_total FLOAT(100,2),
                         PRIMARY KEY(id));""".format(db_prefix))
 
+            # status:
+            # 0: offline
+            # 1: online
             # create/check CPU logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_cpu (
                         id BIGINT NOT NULL AUTO_INCREMENT,
-                        server_id INTEGER NOT NULL,
+                        server_name VARCHAR(100) NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         cpu_percent FLOAT(4,1),
                         PRIMARY KEY(id));""".format(db_prefix))
 
+            # status:
+            # 0: offline
+            # 1: online
             # create/check network logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_network (
                         id BIGINT NOT NULL AUTO_INCREMENT,
-                        server_id INTEGER NOT NULL,
+                        server_name VARCHAR(100) NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         name VARCHAR(50),
@@ -124,10 +137,13 @@ class DBManagement:
                         received BIGINT,
                         PRIMARY KEY(id));""".format(db_prefix))
 
+            # status:
+            # 0: offline
+            # 1: online
             # create/check load logs table
             cur.execute("""CREATE TABLE IF NOT EXISTS {}_load_average (
                         id BIGINT NOT NULL AUTO_INCREMENT,
-                        server_id INTEGER NOT NULL,
+                        server_name VARCHAR(100) NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         1m_avg FLOAT(5,2),
@@ -143,71 +159,65 @@ class DBManagement:
             raise pymysql.Error(e.args[1])
 
     # insert new ping data to SQL database
-    def insert_log_data(self, cur, db_prefix, con, server_name, typ, message):
+    def insert_log_data(self, cur, db_prefix, server_name, typ, message):
         try:
             cur.execute('INSERT INTO {}_log (server_name, type, msg) VALUES (\'{}\', {}, \'{}\')'
                         .format(db_prefix, server_name, typ, message))
-            con.commit()
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [error log] data for server [{}] to '
                                                               'SQL database! STACKTRACE: {}'.format(server_name,
-                                                                                                    ex.args[1]))
+                                                                                                    ex.args[0]))
 
     # insert new ping data to SQL database
-    def insert_ping_data(self, cur, db_prefix, con, server_name, server_id, status, ping=0):
+    def insert_ping_data(self, cur, db_prefix, server_name, status, ping=0):
         try:
-            cur.execute('INSERT INTO {}_ping (server_id, status, ping) VALUES ({}, {}, {})'
-                        .format(db_prefix, server_id, status, ping))
-            con.commit()
+            cur.execute('INSERT INTO {}_ping (server_name, status, ping) VALUES (\'{}\', {}, {})'
+                        .format(db_prefix, server_name, status, ping))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [ping] data for server [{}] to SQL '
                                                               'database! STACKTRACE: {}'.format(server_name,
-                                                                                                ex.args[1]))
+                                                                                                ex.args[0]))
 
     # insert new memory data to SQL database
-    def insert_memory_data(self, cur, db_prefix, con, server_name, server_id, status, ram_percent=0, ram_used=0,
+    def insert_memory_data(self, cur, db_prefix, server_name, status, ram_percent=0, ram_used=0,
                            ram_total=0, swap_percent=0, swap_used=0, swap_total=0):
         try:
-            cur.execute('INSERT INTO {}_memory (server_id, status, ram_percent, ram_used, ram_total, swap_percent, '
-                        'swap_used, swap_total) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'
-                        .format(db_prefix, server_id, status, ram_percent, ram_used, ram_total, swap_percent, swap_used,
-                                swap_total))
-            con.commit()
+            cur.execute('INSERT INTO {}_memory (server_name, status, ram_percent, ram_used, ram_total, swap_percent, '
+                        'swap_used, swap_total) VALUES (\'{}\', {}, {}, {}, {}, {}, {}, {})'
+                        .format(db_prefix, server_name, status, ram_percent, ram_used, ram_total, swap_percent,
+                                swap_used, swap_total))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [memory] data for server [{}] to SQL '
                                                               'database! STACKTRACE: {}'.format(server_name,
-                                                                                                ex.args[1]))
+                                                                                                ex.args[0]))
 
     # insert new CPU data to SQL database
-    def insert_cpu_data(self, cur, db_prefix, con, server_name, server_id, status, cpu_percent=0):
+    def insert_cpu_data(self, cur, db_prefix, server_name, status, cpu_percent=0):
         try:
-            cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) VALUES ({}, {}, {})'
-                        .format(db_prefix, server_id, status, cpu_percent))
-            con.commit()
+            cur.execute('INSERT INTO {}_cpu (server_name, status, cpu_percent) VALUES (\'{}\', {}, {})'
+                        .format(db_prefix, server_name, status, cpu_percent))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [cpu] data for server [{}] to SQL '
                                                               'database! STACKTRACE: {}'.format(server_name,
-                                                                                                ex.args[1]))
+                                                                                                ex.args[0]))
 
     # insert new network data to SQL database
-    def insert_net_data(self, cur, db_prefix, con, server_name, server_id, status, name='', sent=0, received=0):
+    def insert_net_data(self, cur, db_prefix, server_name, status, name='', sent=0, received=0):
         try:
-            cur.execute('INSERT INTO {}_network (server_id, status, name, sent, received) VALUES ({}, {}, \'{}\', {}, '
-                        '{})'.format(db_prefix, server_id, status, name, sent, received))
-            con.commit()
+            cur.execute('INSERT INTO {}_network (server_name, status, name, sent, received) VALUES (\'{}\', {}, \'{}\','
+                        ' {}, {})'.format(db_prefix, server_name, status, name, sent, received))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [network] data for server [{}] to SQL '
                                                               'database! STACKTRACE: {}'.format(server_name,
-                                                                                                ex.args[1]))
+                                                                                                ex.args[0]))
 
     # insert new network data to SQL database
-    def insert_load_data(self, cur, db_prefix, con, server_name, server_id, status, one_avg=0, five_avg=0,
+    def insert_load_data(self, cur, db_prefix, server_name, status, one_avg=0, five_avg=0,
                          fifteen_avg=0):
         try:
-            cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) VALUES ({}, {}, {}, '
-                        '{}, {})'.format(db_prefix, server_id, status, one_avg, five_avg, fifteen_avg))
-            con.commit()
+            cur.execute('INSERT INTO {}_load_average (server_name, status, 1m_avg, 5m_avg, 15m_avg) VALUES (\'{}\', {},'
+                        ' {}, {}, {})'.format(db_prefix, server_name, status, one_avg, five_avg, fifteen_avg))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [load] data for server [{}] to SQL '
                                                               'database! STACKTRACE: {}'.format(server_name,
-                                                                                                ex.args[1]))
+                                                                                                ex.args[0]))
