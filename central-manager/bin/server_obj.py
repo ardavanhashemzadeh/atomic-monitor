@@ -1,14 +1,10 @@
 class Server:
-    def __init__(self, _id, _name, _type, _mode, _host, _port):
-        self.id = _id
+    def __init__(self, _name, _type, _mode, _host, _port):
         self.name = _name
         self.typ = _type
         self.mode = _mode
         self.host = _host
         self.port = _port
-
-    def get_id(self):
-        return self.id
 
     def get_name(self):
         return self.name
