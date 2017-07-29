@@ -3,10 +3,12 @@ from flask import Flask, jsonify, request
 from configparser import ConfigParser
 from uuid import getnode as get_mac
 from datetime import datetime
+from threading import Thread
 import platform
 import cpuinfo
 import psutil
 import socket
+import time
 
 from bin.boot_time import BootTime
 from bin.load_avg import LoadAvg
@@ -18,6 +20,21 @@ from bin.cpu import CPU
 
 # version
 VERSION = '1.0'
+
+# global attributes
+ram_percent = 0
+ram_used = 0
+ram_total = 0
+swap_percent = 0
+swap_used = 0
+swap_total = 0
+cpu_percent = 0
+boot_time = ''
+network_list = []
+disk_list = []
+load_1min = ''
+load_5min = ''
+load_15min = ''
 
 
 # convert human sizes to bytes
@@ -113,7 +130,6 @@ def web_specs():
     cpu_cores = '{} cores @ {}'.format(cpuinfo.get_cpu_info()['count'],
                                        cpuinfo.get_cpu_info()['hz_advertised'])
     total_ram = '{} GB'.format(round(psutil.virtual_memory().total / 1024 / 1024 / 1024), 0)
-    boot_time = boot.get_boot_time()
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(('8.8.8.8', 1))
     is_linux, load_1m, load_5m, load_15m = load.get_load()
@@ -124,7 +140,7 @@ def web_specs():
 
     # create json data
     json_data = {
-        'version': 'v{}'.format(VERSION),
+        'version': VERSION,
         'hostname': socket.gethostname(),
         'ip': s.getsockname()[0],
         'mac': ':'.join(("%012X" % get_mac())[i:i+2] for i in range(0, 12, 2)),
@@ -149,22 +165,9 @@ def web_specs():
 # display current specs
 @app.route('/now')
 def web_now():
-    # retrieve current system specs
-    ram_percent, ram_used, ram_total = sram.get_memory_usage()
-    swap_percent, swap_used, swap_total = sram.get_swap_usage()
-    cpu_percent = scpu.get_usage()
-    boot_time = boot.get_boot_time()
-    disks = sdisk.get_disks()
-    disk_names, disk_percents, disk_uses, disk_totals = [], [], [], []
-    for disk in disks:
-        disk_names.append(disk.get_name())
-        disk_percents.append(disk.get_percent())
-        disk_uses.append(disk.get_used())
-        disk_totals.append(disk.get_total())
-
     # create json object
     json_data = {
-        'version': 'v{}'.format(VERSION),
+        'version': VERSION,
         'ram': {
             'percent': ram_percent,
             'used': ram_used,
@@ -181,16 +184,10 @@ def web_now():
         'boot': {
             'timestamp': boot_time
         },
-        'disks': [
-            {
-                'name': name,
-                'percent': percent,
-                'used': used,
-                'total': total
-            }
-            for name, percent, used, total in zip(disk_names, disk_percents, disk_uses, disk_totals)
-        ]
+        'disks': []
     }
+    for disk in disk_list:
+        json_data['disks'].append(disk.__dict__)
 
     log('INFO', 'AGENT', 'Retrieved now status for IP: {}'.format(request.remote_addr))
 
@@ -201,25 +198,9 @@ def web_now():
 # display full system specs
 @app.route('/all')
 def web_all():
-    # retrieve current system specs
-    ram_percent, ram_used, ram_total = sram.get_memory_usage()
-    swap_percent, swap_used, swap_total = sram.get_swap_usage()
-    cpu_percent = scpu.get_usage()
-    nics_bytes = net.get_nic_status()
-    nic_names, nic_sent, nic_recvs = [], [], []
-    for nic in nics_bytes:
-        nic_names.append(nic.get_name())
-        nic_sent.append(nic.get_sent())
-        nic_recvs.append(nic.get_recv())
-    is_linux, load_1m, load_5m, load_15m = load.get_load()
-    if not is_linux:
-        load_1m = 'NULL'
-        load_5m = 'NULL'
-        load_15m = 'NULL'
-
     # create json object
     json_data = {
-        'version': 'v{}'.format(VERSION),
+        'version': VERSION,
         'memory': {
             'ram': {
                 'percent': ram_percent,
@@ -236,20 +217,15 @@ def web_all():
         'cpu': {
             'percent': cpu_percent
         },
-        'network': [
-            {
-                'name': name,
-                'sent': sent,
-                'received': recv
-            }
-            for name, sent, recv in zip(nic_names, nic_sent, nic_recvs)
-        ],
+        'network': [],
         'load': {
-            '1min': load_1m,
-            '5min': load_5m,
-            '15min': load_15m
+            '1min': load_1min,
+            '5min': load_5min,
+            '15min': load_15min
         }
     }
+    for nic in network_list:
+        json_data['network'].append(nic.__dict__)
 
     log('INFO', 'AGENT', 'Retrieved all status for IP: {}'.format(request.remote_addr))
 
@@ -257,9 +233,51 @@ def web_all():
     return jsonify(json_data)
 
 
+# auto update values
+def specs_updater():
+    global ram_percent, ram_used, ram_total, swap_percent, swap_used, swap_total, cpu_percent, boot_time, network_list, \
+        disk_list, load_1min, load_5min, load_15min
+
+    while True:
+        # update RAM info
+        ram_percent, ram_used, ram_total = sram.get_memory_usage()
+
+        # update swap info
+        swap_percent, swap_used, swap_total = sram.get_swap_usage()
+
+        # update cpu info
+        cpu_percent = scpu.get_usage()
+
+        # update boot time
+        boot_time = boot.get_boot_time()
+
+        # update network info
+        network_list = net.get_nic_status()
+
+        # update disk info
+        disk_list = sdisk.get_disks()
+
+        is_linux, load_1min, load_5min, load_15min = load.get_load()
+        if not is_linux:
+            load_1min = 'NULL'
+            load_5min = 'NULL'
+            load_15min = 'NULL'
+        time.sleep(1)
+
+
 # start flask process
 if __name__ == '__main__':
     log('INFO', 'AGENT', 'Starting program...')
 
+    log('INFO', 'AGENT', 'Starting auto updater...')
+    thd = Thread(target=specs_updater)
+    thd.daemon = True
+    thd.start()
+    log('INFO', 'AGENT', 'Auto updater started!')
+
+    # wait 2 seconds so the updater can go through its first job
+    time.sleep(2)
+
     # start Flask service
-    app.run(host=flsk_host, port=flsk_port)
+    log('INFO', 'AGENT', 'Now listening for HTTP requests...')
+    app.run(host=flsk_host, port=flsk_port, threaded=True)
