@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from subprocess import check_output, CalledProcessError
+from flask import Flask, jsonify, request
 from configparser import ConfigParser
 from warnings import filterwarnings
 from urllib.request import urlopen
-from flask import Flask, jsonify
 from datetime import datetime
 from threading import Thread
 import platform
@@ -13,6 +13,7 @@ import json
 import re
 
 from bin.db_management import DBManagement
+from bin.json_server import JSONServer
 from bin.server_obj import Server
 from bin.error import Error
 from bin.graph import Graph
@@ -36,7 +37,7 @@ def convert_bytes(byts):
 
 # load config file
 config = ConfigParser()
-config.read('P:\\atomi\\Desktop\\config.ini')
+config.read('P:\\atomi\\Desktop\\Configs\\config.ini')
 err_type = ''
 log_file = ''
 db_host = ''
@@ -148,102 +149,113 @@ def ping_server(host):
 # scrape data from each agent (server)
 def scrape_data(time_interval):
     while True:
-        # retrieve list of servers
-        servers = list()
         try:
+            count = 0
+
             # get list of servers
-            #for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
-            #    servers.append(Server(row[0], row[1], row[2], row[3], row[4], row[5]))
+            cur.execute('SELECT * FROM {}_server'.format(db_prefix))
+            for row in cur.fetchall():
 
-            # go through each server and scrape data
-            #for serv in servers:
-            serv = Server(1, 'PROXMOX', 'GN', 0, 'proxmox.watson.io', 5000)
-            ping_result = ping_server(serv.get_host())
-            if ping_result is not -1:
-                try:
-                    # sniff up data from a server
-                    with urlopen('http://{}:{}/all'.format(serv.get_host(), serv.get_port())) as url:
-                        data = json.loads(url.read().decode())
+                # go through each server and scrape data
+                scrape_data_server(Server(row[0], row[1], row[2], row[3], row[4]))
+                count += 1
 
-                        # insert data to SQL db
-                        db_manager.insert_ping_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1, ping_result)
-                        if int(ping_result) > 200:
-                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                       'Slow ping response: {} ms'.format(ping_result))
+            # commit changes to database
+            con.commit()
 
-                        # insert ram data to SQL db
-                        db_manager.insert_memory_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
-                                                      data['memory']['ram']['percent'],
-                                                      data['memory']['ram']['used'],
-                                                      data['memory']['ram']['total'],
-                                                      data['memory']['swap']['percent'],
-                                                      data['memory']['swap']['used'],
-                                                      data['memory']['swap']['total'])
+            log('INFO', 'CM', 'Successfully retrieved and logged data on {} server(s)!'.format(count))
 
-                        # log if RAM/swap is 90% or above
-                        if data['memory']['ram']['percent'] >= 90:
-                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                       'High RAM usage: {}%'.format(
-                                                           data['memory']['ram']['percent']))
-                        if data['memory']['swap']['percent'] >= 90:
-                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                       'High swap usage: {}%'.format(
-                                                           data['memory']['swap']['percent']))
-
-                        # insert CPU data to SQL db
-                        db_manager.insert_cpu_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
-                                                   data['cpu']['percent'])
-
-                        # log if CPU is 90% or above
-                        if data['cpu']['percent'] >= 90:
-                            db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                       'High CPU usage: {}%'.format(data['cpu']['percent']))
-
-                        # insert network data to SQL db
-                        for net_nic in data['network']:
-                            db_manager.insert_net_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
-                                                       net_nic['name'],
-                                                       net_nic['sent'],
-                                                       net_nic['received'])
-
-                        # insert load average data to SQL db
-                        db_manager.insert_load_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 1,
-                                                    data['load']['1min'],
-                                                    data['load']['5min'],
-                                                    data['load']['15min'])
-
-                        # log if load average is 1.00 or above
-                        if data['load']['1min'] != "NULL":
-                            if float(data['load']['1min']) > 1.00:
-                                db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                           'High 1m load usage: {}'.format(data['load']['1min']))
-                            elif float(data['load']['5min']) > 1.00:
-                                db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                           'High 5m load usage: {}'.format(data['load']['5min']))
-                            elif float(data['load']['15min']) > 1.00:
-                                db_manager.insert_log_data(con, cur, serv.get_name(), 0,
-                                                           'High 15m load usage: {}'.format(data['load']['15min']))
-
-                        log('INFO', 'SCRAPE', 'Retrieved and logged data for server [{}]!'.format(serv.get_name()))
-
-                except pymysql.Error:
-                    log('ERROR', 'SCRAPE', 'Unable to access server [{}]! Please make sure the port is open on that '
-                                           'server!'.format(serv.get_name()))
-            else:
-                db_manager.insert_ping_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
-                db_manager.insert_memory_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
-                db_manager.insert_cpu_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
-                db_manager.insert_net_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
-                db_manager.insert_load_data(cur, db_prefix, con, serv.get_name(), serv.get_id(), 0)
-                db_manager.insert_log_data(cur, db_prefix, con, serv.get_name(), 1, 'Server not responding to ping')
-                log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
         except pymysql.Error as ex:
             log('ERROR', 'SQL', 'Problem when trying to retrieve data from SQL database! STACKTRACE: {}'
                 .format(ex.args[1]))
             log('ERROR', 'CM', 'Force closing program...')
             exit()
         time.sleep(time_interval)
-        #break
+
+
+# process through a server in thread mode
+def scrape_data_server(serv):
+    try:
+        ping_result = ping_server(serv.get_host())
+        if ping_result is not -1:
+            try:
+                # sniff up data from a server
+                with urlopen('http://{}:{}/all'.format(serv.get_host(), serv.get_port())) as url:
+                    data = json.loads(url.read().decode())
+
+                    # insert data to SQL db
+                    db_manager.insert_ping_data(cur, db_prefix, serv.get_name(), 1,
+                                                ping_result)
+                    if int(ping_result) > 200:
+                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'Slow ping response: {} ms'.format(
+                            ping_result))
+
+                    # insert ram data to SQL db
+                    db_manager.insert_memory_data(cur, db_prefix, serv.get_name(), 1,
+                                                  data['memory']['ram']['percent'],
+                                                  data['memory']['ram']['used'],
+                                                  data['memory']['ram']['total'],
+                                                  data['memory']['swap']['percent'],
+                                                  data['memory']['swap']['used'],
+                                                  data['memory']['swap']['total'])
+
+                    # log if RAM/swap is 90% or above
+                    if data['memory']['ram']['percent'] >= 90:
+                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'High RAM usage: {}%'.format(
+                            data['memory']['ram']['percent']))
+                    if data['memory']['swap']['percent'] >= 90:
+                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'High swap usage: {}%'.format(
+                            data['memory']['swap']['percent']))
+
+                    # insert CPU data to SQL db
+                    db_manager.insert_cpu_data(cur, db_prefix, serv.get_name(), 1, data['cpu']['percent'])
+
+                    # log if CPU is 90% or above
+                    if data['cpu']['percent'] >= 90:
+                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'High CPU usage: {}%'.format(
+                            data['cpu']['percent']))
+
+                    # insert network data to SQL db
+                    for net_nic in data['network']:
+                        db_manager.insert_net_data(cur, db_prefix, serv.get_name(), 1,
+                                                   net_nic['name'],
+                                                   net_nic['sent'],
+                                                   net_nic['recv'])
+
+                    # insert load average data to SQL db
+                    db_manager.insert_load_data(cur, db_prefix, serv.get_name(), 1,
+                                                data['load']['1min'],
+                                                data['load']['5min'],
+                                                data['load']['15min'])
+
+                    # log if load average is 1.00 or above
+                    if data['load']['1min'] != "NULL":
+                        if float(data['load']['1min']) > 1.00:
+                            db_manager.insert_log_data(cur, serv.get_name(), 0, 'High 1m load usage: {}'.format(
+                                data['load']['1min']))
+                        elif float(data['load']['5min']) > 1.00:
+                            db_manager.insert_log_data(cur, serv.get_name(), 0, 'High 5m load usage: {}'.format(
+                                data['load']['5min']))
+                        elif float(data['load']['15min']) > 1.00:
+                            db_manager.insert_log_data(cur, serv.get_name(), 0, 'High 15m load usage: {}'.format(
+                                data['load']['15min']))
+
+            except pymysql.Error:
+                log('ERROR', 'SCRAPE', 'Unable to access server [{}]! Please make sure the port is open on that'
+                                       ' server!'.format(serv.get_name()))
+
+        else:
+            db_manager.insert_ping_data(cur, db_prefix, serv.get_name(), 0)
+            db_manager.insert_memory_data(cur, db_prefix, serv.get_name(), 0)
+            db_manager.insert_cpu_data(cur, db_prefix, serv.get_name(), 0)
+            db_manager.insert_net_data(cur, db_prefix, serv.get_name(), 0)
+            db_manager.insert_load_data(cur, db_prefix, serv.get_name(), 0)
+            db_manager.insert_log_data(cur, db_prefix, serv.get_name(), 1, 'Server not responding to ping')
+            log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
+
+    except Exception as ex:
+        log('ERROR', 'SQL', 'Unable to retrieve data for server [{}] to SQL database! STACKTRACE: {}'.format(
+            serv.get_name(), ex.args[0]))
 
 
 # retrieve now status for index.html page
@@ -252,69 +264,54 @@ def web_home():
     # retrieve list of servers
     servers = list()
     try:
-        #for row in cur.execute('SELECT * FROM {}_server'.format(db_prefix)):
-        #    server = Server(row[0], row[1], row[2])
-        #    hostname = row[3]
-        #    port = row[4]
-        server = Server(1, 'PROXMOX', 'GN', 0, 'proxmox.watson.io', 5000)
-        # check if server is online & responding
-        ping_result = ping_server(server.get_host())
-        if ping_result is not -1:
+        cur.execute('SELECT * FROM {}_server'.format(db_prefix))
+        for row in cur.fetchall():
+            json_serv = JSONServer(row[0], row[1], row[2], row[3], row[4])
 
-            # retrieve now status from the agent
-            with urlopen('http://{}:{}/now'.format(server.get_host(), server.get_port())) as url:
-                r = json.loads(url.read().decode())
-                cpu_percent = r['cpu']['percent']
-                ram_percent = r['ram']['percent']
-                swap_percent = r['swap']['percent']
-                boot_timestamp = r['boot']['timestamp']
-                disk_status = ''
-                disk_percent = 0
-                for disk in r['disks']:
-                    if 70 <= disk['percent'] < 90:
-                        disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
-                        disk_percent = disk['percent']
-                        break
-                    elif disk['percent'] >= 90:
-                        disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
-                        disk_percent = disk['percent']
-                        break
+            # check if server is online & responding
+            ping_result = ping_server(json_serv.get_host())
+            if ping_result is not -1:
 
-                # assign them to HomeServer object
-                server.set_online(True)
-                server.set_boottime(boot_timestamp)
-                server.set_ping(ping_result)
-                server.set_cpu(cpu_percent)
-                server.set_ram(ram_percent)
-                server.set_swap(swap_percent)
-                server.set_disk_status(disk_status)
-                server.set_disk_percent(disk_percent)
+                # retrieve now status from the agent
+                with urlopen('http://{}:{}/now'.format(json_serv.get_host(), json_serv.get_port())) as url:
+                    r = json.loads(url.read().decode())
+                    cpu_percent = r['cpu']['percent']
+                    ram_percent = r['ram']['percent']
+                    swap_percent = r['swap']['percent']
+                    boot_timestamp = r['boot']['timestamp']
+                    disk_status = ''
+                    disk_percent = 0
+                    for disk in r['disks']:
+                        if 70 <= disk['percent'] < 90:
+                            disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
+                            disk_percent = disk['percent']
+                            break
+                        elif disk['percent'] >= 90:
+                            disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
+                            disk_percent = disk['percent']
+                            break
+
+                    # assign them to HomeServer object
+                    json_serv.set_specs(True, boot_timestamp, ping_result, cpu_percent, ram_percent, swap_percent,
+                                        disk_status, disk_percent)
+
+                    # add to the list
+                    servers.append(json_serv)
+
+            else:
+                # assign empty values to HomeServer object
+                json_serv.set_specs(True, 0, 0, 0, 0, 0, 'Server not responding', 0)
 
                 # add to the list
-                #servers.append(server)
-
-        else:
-            # assign empty values to HomeServer object
-            server.set_online(True)
-            server.set_boottime(0)
-            server.set_ping(0)
-            server.set_cpu(0)
-            server.set_ram(0)
-            server.set_swap(0)
-            server.set_disk_status('Server not responding')
-            server.set_disk_percent(-1)
-
-            # add to the list
-            #servers.append(server)
+                servers.append(json_serv)
 
         # convert HomeServer list object into json_data
         json_data = {
             'status': 'good',
             'data': []
         }
-        json_data = json.dumps(json_data)
-        for server in servers:
-            json_data['data'].append(server.__dict__)
+        for json_serv in servers:
+            json_data['data'].append(json_serv.__dict__)
 
         # print json data
         return jsonify(json_data)
@@ -324,12 +321,12 @@ def web_home():
             .format(sql_err.args[1]))
         
         # let webpanel know that there's an error on CM side
-        json_data = {'status': 'error #home_sql', 'message': 'Unable to retrieve list of servers from SQL database! '
-                                                             'Please check logs.'}
+        json_data = {'status': 'error #home_sql', 'message': 'Unable to retrieve list of servers from SQL database!'
+                                                             ' Please check logs.'}
         return jsonify(json_data)
 
     except Exception as plain_err:
-        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: {}'.format(plain_err.args[1]))
+        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: {}'.format(plain_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #home_plain', 'message': 'Unable to process through list of servers! Please '
@@ -342,11 +339,16 @@ def web_server_names():
     # retrieve list of server names
     try:
         server_names = []
-        for row in cur.execute('SELECT name FROM {}_server'.format(db_prefix)):
+        cur.execute('SELECT name FROM {}_server'.format(db_prefix))
+        for row in cur.fetchall():
             server_names.append(row[0])
         
         # convert to json data
-        json_data = server_names.__dict__
+        json_data = {
+            'server_names': []
+        }
+        for server_name in server_names:
+            json_data['server_names'].append(server_name)
 
         # print json data
         return jsonify(json_data)
@@ -361,7 +363,7 @@ def web_server_names():
         return jsonify(json_data)
 
     except Exception as plain_err:
-        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: {}'.format(plain_err.args[1]))
+        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: {}'.format(plain_err.args[0]))
 
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_names_plain', 'message': 'Unable to process through list of server names!'
@@ -371,14 +373,11 @@ def web_server_names():
 
 @app.route('/graph/<name>/<seconds_timeline>')
 def web_graph(name, seconds_timeline):
-    # retrieve hostname & port for server
     try:
-        typeserv = ''
-        mode = ''
-        hostname = ''
-        port = 0
-        row = cur.execute('SELECT type, mode, hostname, port FROM {}_server WHERE name=%s'.format(db_prefix),
-                          name).fetchone()
+        # retrieve hostname & port for server
+        cur.execute('SELECT type, mode, hostname, port FROM {}_server WHERE name=\'{}\''.format(db_prefix, name))
+        row = cur.fetchone()
+
         typeserv = row[0]
         mode = row[1]
         hostname = row[2]
@@ -459,7 +458,7 @@ def web_graph(name, seconds_timeline):
         server_graph.set_progbar_disks(disk_device_list, disk_data_list)
 
         # convert HomeServer list object into json_data
-        json_data = { 'status': 'good', 'data': server_graph.__dict__ }
+        json_data = {'status': 'good', 'data': server_graph.__dict__}
 
         # print json data
         return jsonify(json_data)
@@ -475,7 +474,7 @@ def web_graph(name, seconds_timeline):
 
     except Exception as plain_err:
         log('ERROR', 'CM', 'Unable to process graph info for server [{}]! STACKTRACE: {}'.format(name,
-                                                                                                 plain_err.args[1]))
+                                                                                                 plain_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server [{}]! Please '
@@ -487,9 +486,8 @@ def web_graph(name, seconds_timeline):
 def web_specs(name):
     # retrieve hostname & port for server
     try:
-        hostname = ''
-        port = 0
-        row = cur.execute('SELECT hostname, port FROM {}_server WHERE name=%s'.format(db_prefix), name).fetchone()
+        cur.execute('SELECT hostname, port FROM {}_server WHERE name=%s'.format(db_prefix), name)
+        row = cur.fetchone()
         hostname = row[0]
         port = row[1]
 
@@ -515,20 +513,18 @@ def web_specs(name):
                              r['cpu_cores'],
                              r['ram'],
                              r['boot'],
-                             [ r['load']['1min'], r['load']['5min'],r['load']['15min'] ])
+                             [r['load']['1min'], r['load']['5min'], r['load']['15min']])
 
             # calculate server's availability
-            row = cur.execute('''SELECT FLOOR((alive.num / total.num) * 100
-                              FROM (
-                                  SELECT COUNT(status) as num FROM ping WHERE status != 1
-                              ) alive
-                              JOIN (
-                                  SELECT COUNT(status) as num FROM ping
-                              ) total;''').fetchone()
-            specs.set_availability(row[0])
+            cur.execute('''SELECT alive.num / total.num * 100.0 as available
+                        FROM ( SELECT COUNT(status) as num FROM {0}_ping WHERE status = 1  ) alive
+                        JOIN ( SELECT COUNT(status) as num FROM {0}_ping                   ) total;'''
+                        .format(db_prefix))
+            specs.set_availability(round(float(cur.fetchone()[0]), 1))
 
             # convert to json data
             json_data = {'status': 'good', 'data': specs.__dict__}
+            print(json_data)
 
             # print json data
             return jsonify(json_data)
@@ -544,7 +540,7 @@ def web_specs(name):
 
     except Exception as plain_err:
         log('ERROR', 'CM', 'Unable to process graph info for server [{}]! STACKTRACE: {}'.format(name,
-                                                                                                 plain_err.args[1]))
+                                                                                                 plain_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server [{}]! Please '
@@ -552,35 +548,47 @@ def web_specs(name):
         return jsonify(json_data)
 
 
-@app.route('/server_logs/<name>/<level>/<count>/<search_for>/<filter_out>')
-def web_server_logs(name, level, count, search_for, filter_out):
+@app.route('/server_logs/<name>/')
+def web_server_logs(name):
+    level = request.args.get('level', -1, type=int)
+    count = request.args.get('count', -1, type=int)
+    search_for = request.args.get('search_for', '', type=str)
+    filter_out = request.args.get('filter_out', '', type=str)
+
     errors = list()
     # retrieve errors
     try:
         if level is -1:
-            rows = cur.execute('(SELECT * FROM {}_log WHERE server_name=%s AND msg LIKE %s AND msg NOT LIKE %s ORDER '
-                               'BY id DESC LIMIT %d) ORDER BY id DESC'.format(db_prefix),
-                               name,
-                               '%{}%'.format(search_for),
-                               '%{}%'.format(filter_out),
-                               count)
+            sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\''.format(db_prefix, name)
+            if search_for is not '':
+                sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+            if filter_out is not '':
+                sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
+            if count is -1:
+                sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
+            else:
+                sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
         else:
-            rows = cur.execute('(SELECT * FROM {}_log WHERE server_name=%s AND type=%d msg LIKE %s AND msg NOT LIKE %s '
-                               'ORDER BY id DESC LIMIT %d) ORDER BY id DESC'.format(db_prefix),
-                               name,
-                               level,
-                               '%{}%'.format(search_for),
-                               '%{}%'.format(filter_out),
-                               count)
-        for row in rows:
+            sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\' AND type={}'.format(db_prefix, name, level)
+            if search_for is not '':
+                sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+            if filter_out is not '':
+                sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
+            if count is -1:
+                sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
+            else:
+                sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+
+        cur.execute(sql_statement)
+
+        for row in cur.fetchall():
             errors.append(Error(row[3], row[1], row[4], row[2]))
-        
+
         # convert to json
         json_data = {
             'status': 'good',
             'data': []
         }
-        json_data = json.dumps(json_data)
         for error in errors:
             json_data['data'].append(error.__dict__)
 
@@ -589,7 +597,7 @@ def web_server_logs(name, level, count, search_for, filter_out):
 
     except pymysql.Error as sql_err:
         log('ERROR', 'CM', 'Unable to retrieve error logs for server [{}] from SQL database! STACKTRACE: {}'
-            .format(name, sql_err.args[1]))
+            .format(name, sql_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_error_logs_sql',
@@ -599,7 +607,7 @@ def web_server_logs(name, level, count, search_for, filter_out):
 
     except Exception as plain_err:
         log('ERROR', 'CM', 'Unable to process error logs for server [{}]! STACKTRACE: {}'.format(name,
-                                                                                                 plain_err.args[1]))
+                                                                                                 plain_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_error_logs_plain', 'message': 'Unable to process error logs for server '
@@ -607,33 +615,75 @@ def web_server_logs(name, level, count, search_for, filter_out):
         return jsonify(json_data)
 
 
-@app.route('/all_logs/<level>/<count>/<search_for>/<filter_out>')
-def web_all_logs(level, count, search_for, filter_out):
+@app.route('/all_logs/')
+def web_all_logs():
+    name = request.args.get('name', '', type=str)
+    level = request.args.get('level', -1, type=int)
+    count = request.args.get('count', -1, type=int)
+    search_for = request.args.get('search_for', '', type=str)
+    filter_out = request.args.get('filter_out', '', type=str)
+
     errors = list()
     # retrieve errors
     try:
-        if level is -1:
-            rows = cur.execute('(SELECT * FROM {}_log WHERE msg LIKE %s AND msg NOT LIKE %s ORDER BY id DESC LIMIT %d) '
-                               'ORDER BY id DESC'.format(db_prefix),
-                               '%{}%'.format(search_for),
-                               '%{}%'.format(filter_out),
-                               count)
+        if name is not '':
+            if level is -1:
+                sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\''.format(db_prefix, name)
+                if search_for is not '':
+                    sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+                if filter_out is not '':
+                    sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
+                if count is -1:
+                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
+                else:
+                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+            else:
+                sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\' AND type={}'.format(db_prefix, name,
+                                                                                                    level)
+                if search_for is not '':
+                    sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+                if filter_out is not '':
+                    sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
+                if count is -1:
+                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
+                else:
+                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
         else:
-            rows = cur.execute('(SELECT * FROM {}_log WHERE type=%d msg LIKE %s AND msg NOT LIKE %s ORDER BY id DESC '
-                               'LIMIT %d) ORDER BY id DESC'.format(db_prefix),
-                               level,
-                               '%{}%'.format(search_for),
-                               '%{}%'.format(filter_out),
-                               count)
-        for row in rows:
+            if level is -1:
+                sql_statement = '(SELECT * FROM {}_log'.format(db_prefix)
+                if search_for is not '':
+                    if 'WHERE' not in sql_statement:
+                        sql_statement += ' WHERE'
+                    sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+                if filter_out is not '':
+                    if 'WHERE' not in sql_statement:
+                        sql_statement += ' WHERE'
+                    sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
+                if count is -1:
+                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
+                else:
+                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+            else:
+                sql_statement = '(SELECT * FROM {}_log WHERE type={}'.format(db_prefix, level)
+                if search_for is not '':
+                    sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+                if filter_out is not '':
+                    sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
+                if count is -1:
+                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
+                else:
+                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+
+        cur.execute(sql_statement)
+
+        for row in cur.fetchall():
             errors.append(Error(row[3], row[1], row[4], row[2]))
-        
+
         # convert to json
         json_data = {
             'status': 'good',
             'data': []
         }
-        json_data = json.dumps(json_data)
         for error in errors:
             json_data['data'].append(error.__dict__)
 
@@ -641,7 +691,7 @@ def web_all_logs(level, count, search_for, filter_out):
         return jsonify(json_data)
 
     except pymysql.Error as sql_err:
-        log('ERROR', 'CM', 'Unable to retrieve error logs from SQL database! STACKTRACE: {}'.format(sql_err.args[1]))
+        log('ERROR', 'CM', 'Unable to retrieve error logs from SQL database! STACKTRACE: {}'.format(sql_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #all_error_logs_sql', 'message': 'Unable to retrieve error logs from SQL '
@@ -649,7 +699,7 @@ def web_all_logs(level, count, search_for, filter_out):
         return jsonify(json_data)
 
     except Exception as plain_err:
-        log('ERROR', 'CM', 'Unable to process error logs! STACKTRACE: {}'.format(plain_err.args[1]))
+        log('ERROR', 'CM', 'Unable to process error logs! STACKTRACE: {}'.format(plain_err.args[0]))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #all_error_logs_plain', 'message': 'Unable to process error logs! Please check '
@@ -677,8 +727,8 @@ if __name__ == '__main__':
     log('INFO', 'SCRAPE', 'Starting scraping thread...')
     thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
-    # thd.start()
-    #scrape_data(interval_time)
+    thd.start()
+    # scrape_data(interval_time)  # DEBUG PURPOSES
     log('INFO', 'SCRAPE', 'Scrape thread started!')
 
     # start Flask service
