@@ -9,6 +9,7 @@ class Spec:
         self.ram = _ram
         self.uptime = _uptime
         self.load_list = _load_list
+        self.availability = -1
     
     def set_availability(self, _availability):
         self.availability = _availability
