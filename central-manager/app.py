@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 from configparser import ConfigParser
 from warnings import filterwarnings
 from urllib.request import urlopen
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Thread
 import platform
 import pymysql
@@ -371,8 +371,16 @@ def web_server_names():
         return jsonify(json_data)
 
 
-@app.route('/graph/<name>/<seconds_timeline>')
-def web_graph(name, seconds_timeline):
+@app.route('/graph/<name>/')
+def web_graph(name):
+    timeline_limit = request.args.get('limit', 1800, type=int)
+
+    # create datetime ranges
+    timeline_start = datetime.now() - timedelta(seconds=timeline_limit)
+    timeline_end = datetime.now()
+    str_start = timeline_start.strftime('%Y-%m-%d %H:%M:%S')
+    str_end = timeline_end.strftime('%Y-%m-%d %H:%M:%S')
+
     try:
         # retrieve hostname & port for server
         cur.execute('SELECT type, mode, hostname, port FROM {}_server WHERE name=\'{}\''.format(db_prefix, name))
@@ -398,9 +406,12 @@ def web_graph(name, seconds_timeline):
         with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
             r = json.loads(url.read().decode())
             cpu_current = r['cpu']['percent']
-        # TODO get list of CPU percentage data based on timeline
         cpu_timeline = []
         cpu_data = []
+        cur.execute('SELECT stamp, cpu FROM {}_cpu WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
+        for row in cur.fetchall():
+            cpu_timeline.append(row[0])
+            cpu_data.append(row[1])
         server_graph.set_graph_cpu(cpu_current, 100, cpu_timeline, cpu_data)
 
         # retrieve RAM graph data
@@ -410,9 +421,12 @@ def web_graph(name, seconds_timeline):
             r = json.loads(url.read().decode())
             ram_current = r['ram']['percent']
             ram_max = r['ram']['total']
-        # TODO get list of RAM percentage data based on timeline
         ram_timeline = []
         ram_data = []
+        cur.execute('SELECT stamp, ram FROM {}_ram WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
+        for row in cur.fetchall():
+            ram_timeline.append(row[0])
+            ram_timeline.append(row[1])
         server_graph.set_graph_ram(ram_current, ram_max, ram_timeline, ram_data)
 
         # retrieve swap graph data
@@ -422,29 +436,47 @@ def web_graph(name, seconds_timeline):
             r = json.loads(url.read().decode())
             swap_current = r['swap']['percent']
             swap_max = r['swap']['total']
-        # TODO get list of swap percentage data based on timeline
         swap_timeline = []
         swap_data = []
+        cur.execute('SELECT stamp, swap FROM {}_swap WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
+        for row in cur.fetchall():
+            swap_timeline.append(row[0])
+            swap_timeline.append(row[1])
         server_graph.set_graph_swap(swap_current, swap_max, swap_timeline, swap_data)
 
         # retrieve load graph data
-        # TODO get list of load percentage data based on timeline
         load_timeline = []
-        load_data_list = []
+        cur.execute('SELECT stamp, load_1m, load_5m, load_15m FROM {}_load WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
+        load_data_list = [3][len(cur.fetchall())]
+        i = 0
+        for row in cur.fetchall():
+            load_timeline.append(row[0])
+            load_data_list[0][i] = row[1]
+            load_data_list[1][i] = row[2]
+            load_data_list[2][i] = row[3]
+            i += 1
         server_graph.set_graph_load(1.5, load_timeline, load_data_list)
 
-        # retrieve network download graph data
-        # TODO get list of network download data based on timeline
+        # retrieve network download/upload graph data
         netdown_timeline = []
-        netdown_max = []
+        netdown_max = 0
         netdown_data = []
-        server_graph.set_graph_netdown(netdown_max, netdown_timeline, netdown_data)
-
-        # retrieve network upload graph data
-        # TODO get list of network upload data based on timeline
         netup_timeline = []
-        netup_max = []
+        netup_max = 0
         netup_data = []
+        cur.execute('SELECT stamp, sent, recv FROM {}_network WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
+        for row in cur.fetchall():
+            netdown_timeline.append(row[0])
+            netup_timeline.append(row[0])
+
+            netdown_data.append(row[2])
+            netup_data.append(row[1])
+
+            if netdown_max < row[2]:
+                netdown_max = row[2]
+            if netup_max < row[1]:
+                netup_max = row[1]
+        server_graph.set_graph_netdown(netdown_max, netdown_timeline, netdown_data)
         server_graph.set_graph_netup(netup_max, netup_timeline, netup_data)
 
         # retrieve disk progressbar data
