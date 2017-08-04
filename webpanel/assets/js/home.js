@@ -149,11 +149,12 @@ $('.gage').knob({
 	readOnly: 'true',
 	font: 'sans-serif',
 	min: 0,
-	max: 100,
-	font: 'sans-serif'
+	max: 101,
+	font: 'sans-serif',
+    draw : function () { $(this.i).val(this.cv + '%'); }
 });
 $('.gage').each(function() {
-	var value = $(this).val();
+	var value = $(this).val().slice(0, -1);
 	if(value >= 70 && value < 90) {
 		$(this).trigger('configure', { 'fgColor': '#F57C00' });
 	}

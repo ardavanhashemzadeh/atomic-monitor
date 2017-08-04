@@ -41,17 +41,17 @@
 				<section id='status'>
 					<div class='status-box good'>
 						<h2>6</h2>
-						<h4>Active servers</h4>
+						<h4>active servers</h4>
 						<h5>Servers Total: 15</h5>
 					</div>
 					<div class='status-box disabled'>
 						<h2>2</h2>
-						<h4>Disabled servers</h4>
+						<h4>disabled servers</h4>
 						<h5>UbuntuS-MAIN, UbuntuS-DB, Firewall</h5>
 					</div>
 					<div class='status-box tofix'>
 						<h2>0</h2>
-						<h4>Servers in maintenance</h4>
+						<h4>servers in maintenance</h4>
 						<h5>N/A</h5>
 					</div>
 				</section>
@@ -91,6 +91,18 @@
 							<div class='agent'>
 								<h3 class='id'>#3</h3>
 								<div class='mode'><span class='disabled'>disabled</span></div>
+								<div class='name'>UbuntuS-MM</div>
+								<div class='host-port'>ubuntus-mm.watson.io:5001</div>
+								<div class='status'><span class='bad'>offline</span></div>
+								<div class='version'><span class='bad'>agent v1.1</span></div>
+								<div class='controls'>
+									<button class='edit' onclick='editAgent("1")'><i class="fa fa-cog" aria-hidden="true"></i> Edit</button>
+									<button class='remove' onclick='removeAgent("1")'><i class="fa fa-trash" aria-hidden="true"></i> Remove</button>
+								</div>
+							</div>
+							<div class='agent'>
+								<h3 class='id'>#3</h3>
+								<div class='mode'><span class='tofix'>in-work</span></div>
 								<div class='name'>UbuntuS-MM</div>
 								<div class='host-port'>ubuntus-mm.watson.io:5001</div>
 								<div class='status'><span class='bad'>offline</span></div>

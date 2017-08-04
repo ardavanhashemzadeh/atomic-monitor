@@ -12,31 +12,40 @@ div#body {
 	margin-left: 60px;
 }
 .disabled {
-	background-color: #616161;
+	background-color: #616161 !important;
 }
 .tofix {
-	background-color: #0288D1;
+	background-color: #0288D1 !important;
 }
 .good {
-	background-color: #4CAF50;
+	background-color: #4CAF50 !important;
 }
 .warn {
-	background-color: #F57C00;
+	background-color: #F57C00 !important;
 }
 .bad {
-	background-color: #E53935;
+	background-color: #E53935 !important;
 }
 .text-disabled {
-	color: #616161;
+	color: #616161 !important;
 }
 .text-good {
-	color: #4CAF50;
+	color: #4CAF50 !important;
 }
 .text-warn {
-	color: #F57C00;
+	color: #F57C00 !important;
 }
 .text-bad {
-	color: #E53935;
+	color: #E53935 !important;
+}
+.one-min-load {
+	color: #d70206;
+}
+.five-min-load {
+	color: #f05b4f;
+}
+.fifteen-min-load {
+	color: #f4c63d;
 }
 
 
@@ -188,15 +197,15 @@ div#body section#servers a.server-box h2 {
 	font-family: 'Roboto', sans-serif;
 	font-weight: 300;
 	font-size: 1.35em;
-	position: inline-block;
 }
 div#body section#servers a.server-box h2 span {
 	padding-left: 8px;
-	position: inline-block;
 	width: 30px;
 	text-align: center;
 	font-size: 0.8em;
 	opacity: 0.8;
+	position: relative;
+	top: -1px;
 }
 div#body section#servers a.server-box h3 {
 	margin: 0;
@@ -219,8 +228,9 @@ div#body section#servers a.server-box div.gages {
 }
 div#body section#servers a.server-box div.gages div {
 	display: inline-block;
-	margin: 0 7px;
+	margin: 0 3px;
 	position: relative;
+	vertical-align: top;
 }
 div#body section#servers a.server-box div.gages div span {
 	position: absolute;
@@ -231,6 +241,39 @@ div#body section#servers a.server-box div.gages div span {
 	font-family: 'Roboto', sans-serif;
 	font-weight: 400;
 	font-size: 0.7em;
+}
+div#body section#servers a.server-box div.gages div.disk-net-box {
+	display: inline-block;
+	margin: 0 0 0 12px;
+	text-align: left;
+	width: 100px;
+	position: relative;
+	top: 1px;
+	vertical-align: middle;
+}
+div#body section#servers a.server-box div.gages div.disk-net-box div.disk-net-status {
+	background-color: rgba(0,0,0,0.2);
+	font-size: 0.8em;
+	display: block;
+	padding: 3px 5px;
+	position: relative;
+	font-family: 'Roboto', sans-serif;
+	font-weight: 400;
+	font-size: 1em;
+	margin: 4px 0;
+	overflow: hidden;
+}
+div#body section#servers a.server-box div.gages div.disk-net-box div.disk-net-status h6.title {
+	margin: 0;
+	float: left;
+	font-weight: 400;
+	font-size: 0.8em;
+}
+div#body section#servers a.server-box div.gages div.disk-net-box div.disk-net-status h6.value {
+	margin: 0;
+	float: right;
+	font-weight: 400;
+	font-size: 0.8em;
 }
 div#body section#servers a.server-box div.disks {
 	height: 25px;

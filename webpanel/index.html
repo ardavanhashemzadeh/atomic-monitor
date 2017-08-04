@@ -38,40 +38,49 @@
 			<section id='status'>
 				<div class='status-box bad'>
 					<h2>1</h2>
-					<h4>Down servers</h4>
+					<h4>down servers</h4>
 					<h5>Database #1</h5>
 				</div>
 				<div class='status-box warn'>
 					<h2>3</h2>
-					<h4>Servers with warnings</h4>
+					<h4>servers needs attention</h4>
 					<h5>UbuntuS-MAIN, UbuntuS-DB, Firewall</h5>
 				</div>
 				<div class='status-box good'>
 					<h2>10</h2>
-					<h4>Up servers</h4>
+					<h4>up and running servers</h4>
 					<h5>Servers Total: 15</h5>
 				</div>
 				<div class='status-box disabled'>
 					<h2>1</h2>
-					<h4>Servers disabled</h4>
+					<h4>disabled servers</h4>
 					<h5>UbuntuS-PU</h5>
 				</div>
 				<div class='status-box tofix'>
 					<h2>0</h2>
-					<h4>Servers in maintenance</h4>
+					<h4>servers in maintenance</h4>
 					<h5>N/A</h5>
 				</div>
 			</section>
 			<section id='servers'>
 				<a class='server-box' href='#'>
 					<div class='bar good'></div>
-					<h2>Adam's Cloud<span><i class="fa fa-server" aria-hidden="true"></i></span></h2>
+					<h2>UbuntuS-HOME<span><i class="fa fa-server" aria-hidden="true"></i></span></h2>
 					<h3>4 days, 2:23:44 - <span class='text-good'>0.02</span> <span class='text-good'>0.33</span> <span class='text-warn'>0.84</span></h3>
 					<div id='server1-ping' class='ping text-good'>20 ms</div>
 					<div class='gages'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='70' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='95' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-swap' type='text' value='63' class='gage'><span>Swap</span></div>
+						<div class='gage-box'><input id='server1-cpu' type='text' value='96' class='gage'><span>CPU</span></div>
+						<div class='gage-box'><input id='server1-ram' type='text' value='71' class='gage'><span>RAM</span></div>
+						<div class='disk-net-box'>
+							<div class='disk-net-status'>
+								<h6 class='title'>Disk:</h6>
+								<h6 class='value text-good'>13 KB/s</h6>
+							</div>
+							<div class='disk-net-status'>
+								<h6 class='title'>Net:</h6>
+								<h6 class='value text-good'>0.2 MB/s</h6>
+							</div>
+						</div>
 					</div>
 					<div class='disks'>
 						<p>Disks: <span class='text-good'>Good</span></p>
@@ -79,13 +88,22 @@
 				</a>
 				<a class='server-box' href='#'>
 					<div class='bar good'></div>
-					<h2>Database #1<span><i class="fa fa-database" aria-hidden="true"></i></span></h2>
-					<h3>4 days, 2:23:44 - <span class='text-good'>0.02</span> <span class='text-good'>0.33</span> <span class='text-warn'>0.84</span></h3>
-					<div id='server1-ping' class='ping text-good'>20 ms</div>
+					<h2>UbuntuS-DB<span><i class="fa fa-database" aria-hidden="true"></i></span></h2>
+					<h3>4 days, 2:23:44 - <span class='text-good'>0.02</span> <span class='text-good'>0.33</span> <span class='text-good'>0.54</span></h3>
+					<div id='server2-ping' class='ping text-good'>20 ms</div>
 					<div class='gages'>
-						<div class='gage-box'><input id='server1-cpu' type='text' value='30' class='gage'><span>CPU</span></div>
-						<div class='gage-box'><input id='server1-ram' type='text' value='1' class='gage'><span>RAM</span></div>
-						<div class='gage-box'><input id='server1-swap' type='text' value='33' class='gage'><span>Swap</span></div>
+						<div class='gage-box'><input id='server2-cpu' type='text' value='30' class='gage'><span>CPU</span></div>
+						<div class='gage-box'><input id='server2-ram' type='text' value='44' class='gage'><span>RAM</span></div>
+						<div class='disk-net-box'>
+							<div class='disk-net-status'>
+								<h6 class='title'>Disk:</h6>
+								<h6 class='value text-good'>13 KB/s</h6>
+							</div>
+							<div class='disk-net-status'>
+								<h6 class='title'>Net:</h6>
+								<h6 class='value text-bad'>143 MB/s</h6>
+							</div>
+						</div>
 					</div>
 					<div class='disks'>
 						<p>Disks: <span class='text-warn'>Device '/' at 80% full</span></p>
