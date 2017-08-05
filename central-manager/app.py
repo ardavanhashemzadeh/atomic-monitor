@@ -12,12 +12,8 @@ import time
 import json
 import re
 
+from bin.objects import Server, JSONServer, Spec, Graph, Error, ServerName
 from bin.db_management import DBManagement
-from bin.json_server import JSONServer
-from bin.server_obj import Server
-from bin.error import Error
-from bin.graph import Graph
-from bin.spec import Spec
 
 
 # convert human sizes to bytes
@@ -157,7 +153,7 @@ def scrape_data(time_interval):
             for row in cur.fetchall():
 
                 # go through each server and scrape data
-                scrape_data_server(Server(row[0], row[1], row[2], row[3], row[4]))
+                scrape_data_server(Server(row[0], row[1], row[2], row[3], row[4], int(row[5])))
                 count += 1
 
             # commit changes to database
@@ -174,24 +170,24 @@ def scrape_data(time_interval):
 
 
 # process through a server in thread mode
-def scrape_data_server(serv):
+def scrape_data_server(server):
     try:
-        ping_result = ping_server(serv.get_host())
+        ping_result = ping_server(server.get_host())
         if ping_result is not -1:
             try:
                 # sniff up data from a server
-                with urlopen('http://{}:{}/all'.format(serv.get_host(), serv.get_port())) as url:
+                with urlopen('http://{}:{}/all'.format(server.get_host(), server.get_port())) as url:
                     data = json.loads(url.read().decode())
 
                     # insert data to SQL db
-                    db_manager.insert_ping_data(cur, db_prefix, serv.get_name(), 1,
-                                                ping_result)
+                    db_manager.insert_ping_data(cur, db_prefix, server.get_id(), 1, ping_result)
+
                     if int(ping_result) > 200:
-                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'Slow ping response: {} ms'.format(
+                        db_manager.insert_log_data(cur, server.get_id(), 0, 'Slow ping response: {} ms'.format(
                             ping_result))
 
                     # insert ram data to SQL db
-                    db_manager.insert_memory_data(cur, db_prefix, serv.get_name(), 1,
+                    db_manager.insert_memory_data(cur, db_prefix, server.get_id(), 1,
                                                   data['memory']['ram']['percent'],
                                                   data['memory']['ram']['used'],
                                                   data['memory']['ram']['total'],
@@ -201,29 +197,30 @@ def scrape_data_server(serv):
 
                     # log if RAM/swap is 90% or above
                     if data['memory']['ram']['percent'] >= 90:
-                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'High RAM usage: {}%'.format(
+                        db_manager.insert_log_data(cur, server.get_id(), 0, 'High RAM usage: {}%'.format(
                             data['memory']['ram']['percent']))
                     if data['memory']['swap']['percent'] >= 90:
-                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'High swap usage: {}%'.format(
+                        db_manager.insert_log_data(cur, server.get_id(), 0, 'High swap usage: {}%'.format(
                             data['memory']['swap']['percent']))
 
                     # insert CPU data to SQL db
-                    db_manager.insert_cpu_data(cur, db_prefix, serv.get_name(), 1, data['cpu']['percent'])
+                    db_manager.insert_cpu_data(cur, db_prefix, server.get_id(), 1,
+                                               data['cpu']['percent'])
 
                     # log if CPU is 90% or above
                     if data['cpu']['percent'] >= 90:
-                        db_manager.insert_log_data(cur, serv.get_name(), 0, 'High CPU usage: {}%'.format(
+                        db_manager.insert_log_data(cur, server.get_id(), 0, 'High CPU usage: {}%'.format(
                             data['cpu']['percent']))
 
                     # insert network data to SQL db
                     for net_nic in data['network']:
-                        db_manager.insert_net_data(cur, db_prefix, serv.get_name(), 1,
+                        db_manager.insert_net_data(cur, db_prefix, server.get_id(), 1,
                                                    net_nic['name'],
                                                    net_nic['sent'],
                                                    net_nic['recv'])
 
                     # insert load average data to SQL db
-                    db_manager.insert_load_data(cur, db_prefix, serv.get_name(), 1,
+                    db_manager.insert_load_data(cur, db_prefix, server.get_id(), 1,
                                                 data['load']['1min'],
                                                 data['load']['5min'],
                                                 data['load']['15min'])
@@ -231,31 +228,31 @@ def scrape_data_server(serv):
                     # log if load average is 1.00 or above
                     if data['load']['1min'] != "NULL":
                         if float(data['load']['1min']) > 1.00:
-                            db_manager.insert_log_data(cur, serv.get_name(), 0, 'High 1m load usage: {}'.format(
+                            db_manager.insert_log_data(cur, server.get_id(), 0, 'High 1m load usage: {}'.format(
                                 data['load']['1min']))
                         elif float(data['load']['5min']) > 1.00:
-                            db_manager.insert_log_data(cur, serv.get_name(), 0, 'High 5m load usage: {}'.format(
+                            db_manager.insert_log_data(cur, server.get_id(), 0, 'High 5m load usage: {}'.format(
                                 data['load']['5min']))
                         elif float(data['load']['15min']) > 1.00:
-                            db_manager.insert_log_data(cur, serv.get_name(), 0, 'High 15m load usage: {}'.format(
+                            db_manager.insert_log_data(cur, server.get_id(), 0, 'High 15m load usage: {}'.format(
                                 data['load']['15min']))
 
             except pymysql.Error:
-                log('ERROR', 'SCRAPE', 'Unable to access server [{}]! Please make sure the port is open on that'
-                                       ' server!'.format(serv.get_name()))
+                log('ERROR', 'SCRAPE', 'Unable to access server [{} ({})]! Please make sure the port is open on that'
+                                       ' server!'.format(server.get_name(), server.get_id()))
 
         else:
-            db_manager.insert_ping_data(cur, db_prefix, serv.get_name(), 0)
-            db_manager.insert_memory_data(cur, db_prefix, serv.get_name(), 0)
-            db_manager.insert_cpu_data(cur, db_prefix, serv.get_name(), 0)
-            db_manager.insert_net_data(cur, db_prefix, serv.get_name(), 0)
-            db_manager.insert_load_data(cur, db_prefix, serv.get_name(), 0)
-            db_manager.insert_log_data(cur, db_prefix, serv.get_name(), 1, 'Server not responding to ping')
-            log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(serv.get_name()))
+            db_manager.insert_ping_data(cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_memory_data(cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_cpu_data(cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_net_data(cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_load_data(cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_log_data(cur, db_prefix, server.get_id(), 1, 'Server not responding to ping')
+            log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(server.get_name()))
 
     except Exception as ex:
-        log('ERROR', 'SQL', 'Unable to retrieve data for server [{}] to SQL database! STACKTRACE: {}'.format(
-            serv.get_name(), ex.args[0]))
+        log('ERROR', 'SQL', 'Unable to retrieve data for server [{} ({})] to SQL database! STACKTRACE: {}'.format(
+            server.get_name(), server.get_id(), ex.args[0]))
 
 
 # retrieve now status for index.html page
@@ -266,7 +263,7 @@ def web_home():
     try:
         cur.execute('SELECT * FROM {}_server'.format(db_prefix))
         for row in cur.fetchall():
-            json_serv = JSONServer(row[0], row[1], row[2], row[3], row[4])
+            json_serv = JSONServer(row[0], row[1], row[2], row[3], row[4], int(row[5]))
 
             # check if server is online & responding
             ping_result = ping_server(json_serv.get_host())
@@ -339,9 +336,9 @@ def web_server_names():
     # retrieve list of server names
     try:
         server_names = []
-        cur.execute('SELECT name FROM {}_server'.format(db_prefix))
+        cur.execute('SELECT id, name FROM {}_server'.format(db_prefix))
         for row in cur.fetchall():
-            server_names.append(row[0])
+            server_names.append(ServerName(int(row[0]), row[1]))
         
         # convert to json data
         json_data = {
@@ -371,8 +368,8 @@ def web_server_names():
         return jsonify(json_data)
 
 
-@app.route('/graph/<name>/')
-def web_graph(name):
+@app.route('/graph/<server_id>/')
+def web_graph(server_id):
     timeline_limit = request.args.get('limit', 1800, type=int)
 
     # create datetime ranges
@@ -381,137 +378,140 @@ def web_graph(name):
     str_start = timeline_start.strftime('%Y-%m-%d %H:%M:%S')
     str_end = timeline_end.strftime('%Y-%m-%d %H:%M:%S')
 
-    try:
-        # retrieve hostname & port for server
-        cur.execute('SELECT type, mode, hostname, port FROM {}_server WHERE name=\'{}\''.format(db_prefix, name))
-        row = cur.fetchone()
+    #try:
+    # retrieve hostname & port for server
+    cur.execute('SELECT name, type, mode, hostname, port FROM {}_server WHERE id={}'.format(db_prefix, server_id))
+    row = cur.fetchone()
 
-        typeserv = row[0]
-        mode = row[1]
-        hostname = row[2]
-        port = row[3]
+    name = row[0]
+    typeserv = row[1]
+    mode = row[2]
+    hostname = row[3]
+    port = row[4]
 
-        # create graph object
-        server_graph = Graph(name, typeserv, mode)
+    # create graph object
+    server_graph = Graph(server_id, name, typeserv, mode)
 
-        # check if server is online & responding
-        ping_result = ping_server(hostname)
-        if ping_result is not -1:
-            server_graph.is_online(True)
-        else:
-            server_graph.is_online(False)
+    # check if server is online & responding
+    ping_result = ping_server(hostname)
+    if ping_result is not -1:
+        server_graph.set_online(True)
+    else:
+        server_graph.set_online(False)
 
-        # retrieve CPU graph data
-        cpu_current = 0
+    # retrieve now status
+    cpu_current, ram_current, ram_max, swap_current, swap_max, load_1m, load_5m, load_15m, disk_device_list, \
+        disk_data_list = 0, 0,  0, 0, 0, 0, 0, 0, [], []
+    if ping_result is not -1:
         with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
             r = json.loads(url.read().decode())
             cpu_current = r['cpu']['percent']
-        cpu_timeline = []
-        cpu_data = []
-        cur.execute('SELECT stamp, cpu FROM {}_cpu WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
-        for row in cur.fetchall():
-            cpu_timeline.append(row[0])
-            cpu_data.append(row[1])
-        server_graph.set_graph_cpu(cpu_current, 100, cpu_timeline, cpu_data)
-
-        # retrieve RAM graph data
-        ram_current = 0
-        ram_max = 0
-        with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
-            r = json.loads(url.read().decode())
             ram_current = r['ram']['percent']
             ram_max = r['ram']['total']
-        ram_timeline = []
-        ram_data = []
-        cur.execute('SELECT stamp, ram FROM {}_ram WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
-        for row in cur.fetchall():
-            ram_timeline.append(row[0])
-            ram_timeline.append(row[1])
-        server_graph.set_graph_ram(ram_current, ram_max, ram_timeline, ram_data)
-
-        # retrieve swap graph data
-        swap_current = 0
-        swap_max = 0
-        with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
-            r = json.loads(url.read().decode())
             swap_current = r['swap']['percent']
             swap_max = r['swap']['total']
-        swap_timeline = []
-        swap_data = []
-        cur.execute('SELECT stamp, swap FROM {}_swap WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
-        for row in cur.fetchall():
-            swap_timeline.append(row[0])
-            swap_timeline.append(row[1])
-        server_graph.set_graph_swap(swap_current, swap_max, swap_timeline, swap_data)
-
-        # retrieve load graph data
-        load_timeline = []
-        cur.execute('SELECT stamp, load_1m, load_5m, load_15m FROM {}_load WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
-        load_data_list = [3][len(cur.fetchall())]
-        i = 0
-        for row in cur.fetchall():
-            load_timeline.append(row[0])
-            load_data_list[0][i] = row[1]
-            load_data_list[1][i] = row[2]
-            load_data_list[2][i] = row[3]
-            i += 1
-        server_graph.set_graph_load(1.5, load_timeline, load_data_list)
-
-        # retrieve network download/upload graph data
-        netdown_timeline = []
-        netdown_max = 0
-        netdown_data = []
-        netup_timeline = []
-        netup_max = 0
-        netup_data = []
-        cur.execute('SELECT stamp, sent, recv FROM {}_network WHERE name\'{}\' AND stamp BETWEEN \'{}\' AND \'{}\';'.format(db_prefix, name, str_start, str_end))
-        for row in cur.fetchall():
-            netdown_timeline.append(row[0])
-            netup_timeline.append(row[0])
-
-            netdown_data.append(row[2])
-            netup_data.append(row[1])
-
-            if netdown_max < row[2]:
-                netdown_max = row[2]
-            if netup_max < row[1]:
-                netup_max = row[1]
-        server_graph.set_graph_netdown(netdown_max, netdown_timeline, netdown_data)
-        server_graph.set_graph_netup(netup_max, netup_timeline, netup_data)
-
-        # retrieve disk progressbar data
-        disk_device_list = []
-        disk_data_list = []
-        with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
-            r = json.loads(url.read().decode())
+            #load_1m = r['load']['1m']
+            #load_5m = r['load']['5m']
+            #load_15m = r['load']['15m']
             for disk in r['disks']:
                 disk_device_list.append(disk['name'])
                 disk_data_list.append(disk['percent'])
-        server_graph.set_progbar_disks(disk_device_list, disk_data_list)
 
-        # convert HomeServer list object into json_data
-        json_data = {'status': 'good', 'data': server_graph.__dict__}
+    # retrieve timestamps
+    timestamps = []
+    cur.execute('SELECT stamp FROM {}_cpu WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
+                .format(db_prefix, server_id, str_start, str_end))
+    for row in cur.fetchall():
+        timestamps.append(row[0])
+    server_graph.set_timeline(timestamps)
 
-        # print json data
-        return jsonify(json_data)
+    # retrieve CPU graph data
+    cpu_data = []
+    cur.execute('SELECT cpu_percent FROM {}_cpu WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
+                .format(db_prefix, server_id, str_start, str_end))
+    for row in cur.fetchall():
+        cpu_data.append(row[0])
+    server_graph.set_graph_cpu(cpu_current, 100, cpu_data)
 
-    except pymysql.Error as sql_err:
-        log('ERROR', 'CM', 'Unable to retrieve info for server [{}] from SQL database! STACKTRACE: {}'
-            .format(name, sql_err.args[1]))
+    # retrieve RAM & swap graph data
+    ram_data = []
+    swap_data = []
+    cur.execute('SELECT ram_used, swap_used FROM {}_memory WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
+                .format(db_prefix, server_id, str_start, str_end))
+    for row in cur.fetchall():
+        ram_data.append(row[0])
+        swap_data.append(row[1])
+    server_graph.set_graph_ram(ram_current, ram_max, ram_data)
+    server_graph.set_graph_swap(swap_current, swap_max, swap_data)
+
+    # retrieve load average graph data
+    load_max = 0
+    load_data = []
+    cur.execute('SELECT 1m_avg, 5m_avg, 15m_avg FROM {}_load_average WHERE server_id={} AND stamp BETWEEN \'{}\' AND'
+                ' \'{}\';'.format(db_prefix, server_id, str_start, str_end))
+    for row in cur.fetchall():
+        if row[0] > load_max:
+            load_max = row[0]
+        if row[1] > load_max:
+            load_max = row[0]
+        if row[2] > load_max:
+            load_max = row[0]
+        load_data.append([row[0], row[1], row[2]])
+    server_graph.set_graph_load(load_1m, load_5m, load_15m, load_max, load_data)
+
+    # retrieve network download/upload graph data
+    netdown_max = 0
+    netdown_data = []
+    netup_max = 0
+    netup_data = []
+    cur.execute('SELECT sent, received FROM {}_network WHERE server_id={} AND stamp BETWEEN \'{}\' AND \''
+                '{}\';'.format(db_prefix, server_id, str_start, str_end))
+    for row in cur.fetchall():
+        netup_data.append(row[0])
+        netdown_data.append(row[1])
+
+        if netup_max < row[0]:
+            netup_max = row[0]
+        if netdown_max < row[1]:
+            netdown_max = row[1]
+    server_graph.set_graph_netup(netup_max, netup_data)
+    server_graph.set_graph_netdown(netdown_max, netdown_data)
+
+    # retrieve ping data
+    ping_max = 0
+    ping_data = []
+    cur.execute('SELECT ping FROM {}_ping WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
+                .format(db_prefix, server_id, str_start, str_end))
+    for row in cur.fetchall():
+        ping_data.append(row[0])
+    server_graph.set_graph_ping(ping_max, ping_data)
+
+    # retrieve disk progressbar data
+    server_graph.set_progbar_disks(disk_device_list, disk_data_list)
+
+    # convert HomeServer list object into json_data
+    json_data = {'status': 'good', 'data': server_graph.__dict__}
+
+    # print json data
+    return jsonify(json_data)
+
+    #except pymysql.Error as sql_err:
+    #    log('ERROR', 'CM', 'Unable to retrieve info for server [{}] from SQL database! STACKTRACE: {}'
+    #        .format(name, sql_err.args[1]))
         
         # let webpanel know that there's an error on CM side
-        json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server [{}] from SQL '
-                                                              'database! Please check logs.'.format(name)}
-        return jsonify(json_data)
+     #   json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server [{}] from SQL '
+     #                                                         'database! Please check logs.'.format(name)}
+    #    return jsonify(json_data)
 
-    except Exception as plain_err:
-        log('ERROR', 'CM', 'Unable to process graph info for server [{}]! STACKTRACE: {}'.format(name,
-                                                                                                 plain_err.args[0]))
+    #except Exception as plain_err:
+    #    log('ERROR', 'CM', 'Unable to process graph info for server [{}]! STACKTRACE: {}'.format(name,
+       #                                                                                          plain_err.args[0]))
         
         # let webpanel know that there's an error on CM side
-        json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server [{}]! Please '
-                                                                'check logs.'.format(name)}
-        return jsonify(json_data)
+    #    json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server [{}]! Please '
+    #                                                            'check logs.'.format(name)}
+    #    return jsonify(json_data)
 
 
 @app.route('/specs/<name>')
@@ -759,8 +759,7 @@ if __name__ == '__main__':
     log('INFO', 'SCRAPE', 'Starting scraping thread...')
     thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
-    thd.start()
-    # scrape_data(interval_time)  # DEBUG PURPOSES
+    thd.start()  # TODO remove after testing
     log('INFO', 'SCRAPE', 'Scrape thread started!')
 
     # start Flask service
