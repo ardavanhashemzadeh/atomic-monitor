@@ -12,7 +12,7 @@ import time
 import json
 import re
 
-from bin.objects import Server, JSONServer, Spec, Graph, Error, ServerName
+from bin.objects import Server, JSONServer, Spec, Graph, Error, ServerName, NetData
 from bin.db_management import DBManagement
 
 
@@ -213,11 +213,12 @@ def scrape_data_server(server):
                             data['cpu']['percent']))
 
                     # insert network data to SQL db
+                    net_data = []
                     for net_nic in data['network']:
-                        db_manager.insert_net_data(cur, db_prefix, server.get_id(), 1,
-                                                   net_nic['name'],
-                                                   net_nic['sent'],
-                                                   net_nic['recv'])
+                        net_data.append(NetData(net_nic['name'],
+                                                net_nic['sent'],
+                                                net_nic['recv']))
+                    db_manager.insert_net_data(cur, db_prefix, server.get_id(), 1, net_data)
 
                     # insert load average data to SQL db
                     db_manager.insert_load_data(cur, db_prefix, server.get_id(), 1,
@@ -410,9 +411,9 @@ def web_graph(server_id):
             ram_max = r['ram']['total']
             swap_current = r['swap']['percent']
             swap_max = r['swap']['total']
-            #load_1m = r['load']['1m']
-            #load_5m = r['load']['5m']
-            #load_15m = r['load']['15m']
+            load_1m = r['load']['1m']
+            load_5m = r['load']['5m']
+            load_15m = r['load']['15m']
             for disk in r['disks']:
                 disk_device_list.append(disk['name'])
                 disk_data_list.append(disk['percent'])
@@ -464,16 +465,19 @@ def web_graph(server_id):
     netdown_data = []
     netup_max = 0
     netup_data = []
-    cur.execute('SELECT sent, received FROM {}_network WHERE server_id={} AND stamp BETWEEN \'{}\' AND \''
-                '{}\';'.format(db_prefix, server_id, str_start, str_end))
+    cur.execute('SELECT device_id FROM {}_network WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
+                .format(db_prefix, server_id, str_start, str_end))
     for row in cur.fetchall():
-        netup_data.append(row[0])
-        netdown_data.append(row[1])
+        device_id = row[0]
+        cur.execute('SELECT name, sent, received FROM {}_network_device WHERE id={}'.format(db_prefix, device_id))
+        for row2 in cur.fetchall():
+            netup_data.append([row2[0], row2[1]])
+            netdown_data.append([row2[0], row2[2]])
 
-        if netup_max < row[0]:
-            netup_max = row[0]
-        if netdown_max < row[1]:
-            netdown_max = row[1]
+            if netup_max < row2[1]:
+                netup_max = row2[1]
+            if netdown_max < row2[2]:
+                netdown_max = row2[2]
     server_graph.set_graph_netup(netup_max, netup_data)
     server_graph.set_graph_netdown(netdown_max, netdown_data)
 

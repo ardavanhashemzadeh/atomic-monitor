@@ -175,3 +175,19 @@ class ServerName:
     def __init__(self, _id, _name):
         self.id = _id
         self.name = _name
+
+
+class NetData:
+    def __init(self, _name, _sent, _recv):
+        self.name = _name
+        self.sent = _sent
+        self.recv = _recv
+
+    def get_name(self):
+        return self.name
+
+    def get_sent(self):
+        return self.sent
+
+    def get_recv(self):
+        return self.recv

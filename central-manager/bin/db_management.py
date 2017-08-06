@@ -76,7 +76,7 @@ class DBManagement:
                         mode CHAR(1) NOT NULL,
                         hostname VARCHAR(255) NOT NULL,
                         port SMALLINT NOT NULL,
-                        PRIMARY KEY(id));""".format(db_prefix))
+                        PRIMARY KEY (id));""".format(db_prefix))
 
             # create/check error logs table
             # type:
@@ -101,7 +101,7 @@ class DBManagement:
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         ping INT DEFAULT 0,
-                        PRIMARY KEY(id),
+                        PRIMARY KEY (id),
                         FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
 
             # status:
@@ -119,7 +119,7 @@ class DBManagement:
                         swap_percent FLOAT(4,1) DEFAULT 0,
                         swap_used FLOAT(100,2) DEFAULT 0,
                         swap_total FLOAT(100,2) DEFAULT 0,
-                        PRIMARY KEY(id),
+                        PRIMARY KEY (id),
                         FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
 
             # status:
@@ -132,7 +132,7 @@ class DBManagement:
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
                         cpu_percent FLOAT(4,1) DEFAULT 0,
-                        PRIMARY KEY(id),
+                        PRIMARY KEY (id),
                         FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
 
             # status:
@@ -144,11 +144,18 @@ class DBManagement:
                         server_id INT NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
-                        name VARCHAR(50),
+                        device_id BIGINT NOT NULL AUTO_INCREMENT,
+                        PRIMARY KEY (id),
+                        FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
+
+            # create/check network device table
+            cur.execute("""CREATE TABLE IF NOT EXISTS {0}_network_device (
+                        id BIGINT NOT NULL,
+                        name VARCHAR(50) DEFAULT \'none\',
                         sent BIGINT DEFAULT 0,
                         received BIGINT DEFAULT 0,
-                        PRIMARY KEY(id),
-                        FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
+                        PRIMARY KEY (id, name),
+                        FOREIGN KEY (id) REFERENCES {0}_network(device_id));""".format(db_prefix))
 
             # status:
             # 0: offline
@@ -162,7 +169,7 @@ class DBManagement:
                         1m_avg FLOAT(5,2) DEFAULT 0,
                         5m_avg FLOAT(5,2) DEFAULT 0,
                         15m_avg FLOAT(5,2) DEFAULT 0,
-                        PRIMARY KEY(id),
+                        PRIMARY KEY (id),
                         FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
 
             # submit changes to SQL server
@@ -177,7 +184,7 @@ class DBManagement:
     # insert new ping data to SQL database
     def insert_log_data(self, cur, db_prefix, server_id, typ, message):
         try:
-            cur.execute('INSERT INTO {}_log (server_id, type, msg) VALUES (\'{}\', {}, \'{}\')'
+            cur.execute('INSERT INTO {}_log (server_id, type, msg) VALUES ({}, {}, \'{}\')'
                         .format(db_prefix, server_id, typ, message))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [error log] data for server ID [{}] to '
@@ -187,7 +194,7 @@ class DBManagement:
     # insert new ping data to SQL database
     def insert_ping_data(self, cur, db_prefix, server_id, status, ping=0):
         try:
-            cur.execute('INSERT INTO {}_ping (server_id, status, ping) VALUES (\'{}\', {}, {})'
+            cur.execute('INSERT INTO {}_ping (server_id, status, ping) VALUES ({}, {}, {})'
                         .format(db_prefix, server_id, status, ping))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [ping] data for server ID [{}] to SQL '
@@ -198,7 +205,7 @@ class DBManagement:
                            ram_total=0, swap_percent=0, swap_used=0, swap_total=0):
         try:
             cur.execute('INSERT INTO {}_memory (server_id, status, ram_percent, ram_used, ram_total, swap_percent, '
-                        'swap_used, swap_total) VALUES (\'{}\', {}, {}, {}, {}, {}, {}, {})'
+                        'swap_used, swap_total) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'
                         .format(db_prefix, server_id, status, ram_percent, ram_used, ram_total, swap_percent,
                                 swap_used, swap_total))
         except pymysql.Error as ex:
@@ -208,7 +215,7 @@ class DBManagement:
     # insert new CPU data to SQL database
     def insert_cpu_data(self, cur, db_prefix, server_id, status, cpu_percent=0):
         try:
-            cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) VALUES (\'{}\', {}, {})'
+            cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) VALUES ({}, {}, {})'
                         .format(db_prefix, server_id, status, cpu_percent))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [cpu] data for server ID [{}] to SQL '
@@ -216,10 +223,22 @@ class DBManagement:
                                                                                                 ex.args[1]))
 
     # insert new network data to SQL database
-    def insert_net_data(self, cur, db_prefix, server_id, status, name='', sent=0, received=0):
+    def insert_net_data(self, cur, db_prefix, server_id, status, net_data=None):
         try:
-            cur.execute('INSERT INTO {}_network (server_id, status, name, sent, received) VALUES (\'{}\', {}, \'{}\','
-                        ' {}, {})'.format(db_prefix, server_id, status, name, sent, received))
+            if net_data is not None:
+                cur.execute('INSERT INTO {}_network (server_id, status) VALUES ({}, {})'
+                            .format(db_prefix, server_id, status))
+                cur.execute('SELECT LAST_INSERT_ID()')
+                device_id = cur.fetch_one()[1]
+                for net in net_data:
+                    cur.execute('INSERT INTO {}_network_device (id, name, sent, received) VALUES ({}, \'{}\', {}, {})'
+                                .format(db_prefix, device_id, net.get_name(), net.get_sent(), net.get_recv()))
+            else:
+                cur.execute('INSERT INTO {}_network (server_id, status) VALUES ({}, {})'
+                            .format(db_prefix, server_id, status))
+                cur.execute('SELECT LAST_INSERT_ID()')
+                device_id = cur.fetchone()[0]
+                cur.execute('INSERT INTO {}_network_device (id) VALUES ({})'.format(db_prefix, device_id))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [network] data for server ID [{}] to '
                                                               'SQL database! STACKTRACE: {}'.format(server_id,
@@ -229,7 +248,7 @@ class DBManagement:
     def insert_load_data(self, cur, db_prefix, server_id, status, one_avg=0, five_avg=0,
                          fifteen_avg=0):
         try:
-            cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) VALUES (\'{}\', {},'
+            cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) VALUES ({}, {},'
                         ' {}, {}, {})'.format(db_prefix, server_id, status, one_avg, five_avg, fifteen_avg))
         except pymysql.Error as ex:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [load] data for server ID [{}] to SQL '
