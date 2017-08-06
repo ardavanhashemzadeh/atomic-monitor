@@ -1,4 +1,5 @@
 from datetime import datetime
+import traceback
 import pymysql
 
 
@@ -13,16 +14,17 @@ def log(LOG_FORMAT, logger, level, typ, message):
                                        typ,
                                        message) + '\n')
         logger.flush()
-    except IOError as ex:
+    except IOError:
         print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
                                 'ERROR',
                                 'AGENT',
-                                'Unable to log to file! STACKTRACE: {}'.format(ex.args[1])))
-    except Exception as ex:
+                                'Unable to log to file! STACKTRACE: \n{}'.format(traceback.format_exc())))
+    except Exception:
         print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
                                 'ERROR',
                                 'AGENT',
-                                'Unexpected error when trying to log to file! STACKTRACE: {}'.format(ex.args[0])))
+                                'Unexpected error when trying to log to file! STACKTRACE: \n{}'
+                                .format(traceback.format_exc())))
 
 
 class DBManagement:
@@ -44,10 +46,10 @@ class DBManagement:
             cur = con.cursor()
 
             return con, cur
-        except pymysql.Error as ex:
-            raise pymysql.Error(ex.args[1])
-        except Exception as ex:
-            raise Exception(ex.args[0])
+        except pymysql.Error:
+            raise pymysql.Error(traceback.format_exc())
+        except Exception:
+            raise Exception(traceback.format_exc())
 
     def check_tables(self, con, cur, db_prefix):
         log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Preparing database...')
@@ -175,29 +177,30 @@ class DBManagement:
             con.commit()
             log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'All tables checked!')
             log(self.LOG_FORMAT, self.logger, 'INFO', 'SQL', 'Database prepared!')
-        except pymysql.Error as ex:
-            raise pymysql.Error(ex.args[1])
-        except Exception as ex:
-            raise Exception(ex.args[0])
+        except pymysql.Error:
+            raise pymysql.Error(traceback.format_exc())
+        except Exception:
+            raise Exception(traceback.format_exc())
 
     # insert new ping data to SQL database
     def insert_log_data(self, cur, db_prefix, server_id, typ, message):
         try:
             cur.execute('INSERT INTO {}_log (server_id, type, msg) VALUES ({}, {}, \'{}\')'
                         .format(db_prefix, server_id, typ, message))
-        except pymysql.Error as ex:
+        except pymysql.Error:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [error log] data for server ID [{}] to '
-                                                              'SQL database! STACKTRACE: {}'.format(server_id,
-                                                                                                    ex.args[1]))
+                                                              'SQL database! STACKTRACE: \n{}'
+                .format(server_id, traceback.format_exc()))
 
     # insert new ping data to SQL database
     def insert_ping_data(self, cur, db_prefix, server_id, status, ping=0):
         try:
             cur.execute('INSERT INTO {}_ping (server_id, status, ping) VALUES ({}, {}, {})'
                         .format(db_prefix, server_id, status, ping))
-        except pymysql.Error as ex:
+        except pymysql.Error:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [ping] data for server ID [{}] to SQL '
-                                                              'database! STACKTRACE: {}'.format(server_id, ex.args[1]))
+                                                              'database! STACKTRACE: \n{}'
+                .format(server_id, traceback.format_exc()))
 
     # insert new memory data to SQL database
     def insert_memory_data(self, cur, db_prefix, server_id, status, ram_percent=0, ram_used=0,
@@ -207,19 +210,20 @@ class DBManagement:
                         'swap_used, swap_total) VALUES ({}, {}, {}, {}, {}, {}, {}, {})'
                         .format(db_prefix, server_id, status, ram_percent, ram_used, ram_total, swap_percent,
                                 swap_used, swap_total))
-        except pymysql.Error as ex:
+        except pymysql.Error:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [memory] data for server ID [{}] to SQL'
-                                                              ' database! STACKTRACE: {}'.format(server_id, ex.args[1]))
+                                                              ' database! STACKTRACE: \n{}'
+                .format(server_id, traceback.format_exc()))
 
     # insert new CPU data to SQL database
     def insert_cpu_data(self, cur, db_prefix, server_id, status, cpu_percent=0):
         try:
             cur.execute('INSERT INTO {}_cpu (server_id, status, cpu_percent) VALUES ({}, {}, {})'
                         .format(db_prefix, server_id, status, cpu_percent))
-        except pymysql.Error as ex:
+        except pymysql.Error:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [cpu] data for server ID [{}] to SQL '
-                                                              'database! STACKTRACE: {}'.format(server_id,
-                                                                                                ex.args[1]))
+                                                              'database! STACKTRACE: \n{}'
+                .format(server_id, traceback.format_exc()))
 
     # insert new network data to SQL database
     def insert_net_data(self, cur, db_prefix, server_id, status, net_data=None):
@@ -238,10 +242,10 @@ class DBManagement:
                 cur.execute('SELECT LAST_INSERT_ID()')
                 device_id = cur.fetchone()[0]
                 cur.execute('INSERT INTO {}_network_device (id) VALUES ({})'.format(db_prefix, device_id))
-        except pymysql.Error as ex:
+        except pymysql.Error:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [network] data for server ID [{}] to '
-                                                              'SQL database! STACKTRACE: {}'.format(server_id,
-                                                                                                    ex.args[1]))
+                                                              'SQL database! STACKTRACE: \n{}'
+                .format(server_id, traceback.format_exc()))
 
     # insert new network data to SQL database
     def insert_load_data(self, cur, db_prefix, server_id, status, one_avg=0, five_avg=0,
@@ -249,7 +253,7 @@ class DBManagement:
         try:
             cur.execute('INSERT INTO {}_load_average (server_id, status, 1m_avg, 5m_avg, 15m_avg) VALUES ({}, {},'
                         ' {}, {}, {})'.format(db_prefix, server_id, status, one_avg, five_avg, fifteen_avg))
-        except pymysql.Error as ex:
+        except pymysql.Error:
             log(self.LOG_FORMAT, self.logger, 'ERROR', 'SQL', 'Unable to insert [load] data for server ID [{}] to SQL '
-                                                              'database! STACKTRACE: {}'.format(server_id,
-                                                                                                ex.args[1]))
+                                                              'database! STACKTRACE: \n{}'
+                .format(server_id, traceback.format_exc()))

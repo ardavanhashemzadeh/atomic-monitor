@@ -4,6 +4,7 @@ from configparser import ConfigParser
 from uuid import getnode as get_mac
 from datetime import datetime
 from threading import Thread
+import traceback
 import platform
 import cpuinfo
 import psutil
@@ -74,7 +75,7 @@ try:
     err_type = 'Flask > Port'
     flsk_port = config.getint('Flask', 'Port', fallback=5000)
 except IOError as e:
-    print('CONFIG ERROR: Unable to load values from \"{}\"! STACKTRACE: {}'.format(err_type, e.args[1]))
+    print('CONFIG ERROR: Unable to load values from \"{}\"! STACKTRACE: \n{}'.format(err_type, traceback.format_exc()))
     print('CONFIG ERROR: Force closing program...')
     exit()
 
@@ -84,7 +85,7 @@ logger = None
 try:
     logger = open(log_file, 'a')
 except IOError as e:
-    print('FILE ERROR: Unable to open log file! STACETRACE: {}'.format(e.args[1]))
+    print('FILE ERROR: Unable to open log file! STACKTRACE: \n{}'.format(traceback.format_exc()))
     print('FILE ERROR: Force closing program...')
     exit()
 
@@ -108,7 +109,7 @@ def log(level, typ, message):
         print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
                                 'ERROR',
                                 'AGENT',
-                                'Unable to log to file! STACKTRACE: {}'.format(ex.args[1])))
+                                'Unable to log to file! STACKTRACE: \n{}'.format(traceback.format_exc())))
 
 
 # setup variables

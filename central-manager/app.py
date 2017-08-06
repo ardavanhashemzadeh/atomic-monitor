@@ -14,7 +14,7 @@ import json
 import re
 import os
 
-from bin.objects import Server, JSONServer, Spec, Graph, Error, ServerName, NetData
+from bin.objects import Server, JSONServer, Spec, Graph, Error, NetData
 from bin.db_management import DBManagement
 
 
@@ -76,7 +76,7 @@ try:
     err_type = 'UI_Feeder > Port'
     flsk_port = config.getint('UI_Feeder', 'Port', fallback=5001)
 except IOError:
-    print('CONFIG ERROR: Unable to load values from \"{}\"! STACKTRACE: \n{}'.format(err_type, traceback.print_exc()))
+    print('CONFIG ERROR: Unable to load values from \"{}\"! STACKTRACE: \n{}'.format(err_type, traceback.format_exc()))
     print('CONFIG ERROR: Force closing program...')
     exit()
 
@@ -86,7 +86,7 @@ logger = None
 try:
     logger = open(log_file, 'a')
 except IOError:
-    print('FILE ERROR: Unable to open log file! STACKTRACE: \n{}'.format(traceback.print_exc()))
+    print('FILE ERROR: Unable to open log file! STACKTRACE: \n{}'.format(traceback.format_exc()))
     print('FILE ERROR: Force closing program...')
     exit()
 
@@ -110,7 +110,7 @@ def log(level, typ, message):
         print(LOG_FORMAT.format(datetime.now().strftime('%Y-%m-%d %X'),
                                 'ERROR',
                                 'CM',
-                                'Unable to log to file! STACKTRACE: \n{}'.format(traceback.print_exc())))
+                                'Unable to log to file! STACKTRACE: \n{}'.format(traceback.format_exc())))
 
 
 # setup flask
@@ -165,7 +165,7 @@ def scrape_data(time_interval):
 
         except pymysql.Error:
             log('ERROR', 'SQL', 'Problem when trying to retrieve data from SQL database! STACKTRACE: \n{}'
-                .format(traceback.print_exc()))
+                .format(traceback.format_exc()))
             log('ERROR', 'CM', 'Force closing program...')
             exit()
         time.sleep(time_interval)
@@ -252,9 +252,9 @@ def scrape_data_server(server):
             log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(server.get_name()))
 
     except Exception:
-        traceback.print_exc()
+        traceback.format_exc()
         log('ERROR', 'SQL', 'Unable to retrieve data for server [{} ({})] to SQL database! STACKTRACE: \n{}'.format(
-            server.get_name(), server.get_id(), traceback.print_exc()))
+            server.get_name(), server.get_id(), traceback.format_exc()))
 
 
 # retrieve now status for index.html page
@@ -317,7 +317,7 @@ def web_home():
 
     except pymysql.Error:
         log('ERROR', 'CM', 'Unable to retrieve list of servers from SQL database! STACKTRACE: \n{}'
-            .format(traceback.print_exc()))
+            .format(traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #home_sql', 'message': 'Unable to retrieve list of servers from SQL database!'
@@ -325,7 +325,7 @@ def web_home():
         return jsonify(json_data)
 
     except Exception:
-        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: \n{}'.format(traceback.print_exc()))
+        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: \n{}'.format(traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #home_plain', 'message': 'Unable to process through list of servers! Please '
@@ -340,7 +340,7 @@ def web_server_names():
         server_names = []
         cur.execute('SELECT id, name FROM {}_server'.format(db_prefix))
         for row in cur.fetchall():
-            server_names.append(ServerName(int(row[0]), row[1]))
+            server_names.append([int(row[0]), row[1]])
         
         # convert to json data
         json_data = {
@@ -354,7 +354,7 @@ def web_server_names():
 
     except pymysql.Error:
         log('ERROR', 'CM', 'Unable to retrieve list of server names from SQL database! STACKTRACE: \n{}'
-            .format(traceback.print_exc()))
+            .format(traceback.format_exc()))
 
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_names_sql', 'message': 'Unable to retrieve list of server names from SQL '
@@ -362,7 +362,7 @@ def web_server_names():
         return jsonify(json_data)
 
     except Exception:
-        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: \n{}'.format(traceback.print_exc()))
+        log('ERROR', 'CM', 'Unable to process through list of servers! STACKTRACE: \n{}'.format(traceback.format_exc()))
 
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_names_plain', 'message': 'Unable to process through list of server names!'
@@ -506,7 +506,7 @@ def web_graph(server_id):
 
     except pymysql.Error:
         log('ERROR', 'CM', 'Unable to retrieve info for server ID [{}] from SQL database! STACKTRACE: \n{}'
-            .format(server_id, traceback.print_exc()))
+            .format(server_id, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server ID [{}] from SQL '
@@ -515,7 +515,7 @@ def web_graph(server_id):
 
     except Exception:
         log('ERROR', 'CM', 'Unable to process graph info for server ID [{}]! STACKTRACE: \n{}'
-            .format(server_id, traceback.print_exc()))
+            .format(server_id, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server ID [{}]! '
@@ -572,7 +572,7 @@ def web_specs(name):
 
     except pymysql.Error:
         log('ERROR', 'CM', 'Unable to retrieve info for server [{}] from SQL database! STACKTRACE: \n{}'
-            .format(name, traceback.print_exc()))
+            .format(name, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server [{}] from SQL '
@@ -581,7 +581,7 @@ def web_specs(name):
 
     except Exception:
         log('ERROR', 'CM', 'Unable to process graph info for server [{}]! STACKTRACE: \n{}'
-            .format(name, traceback.print_exc()))
+            .format(name, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server [{}]! Please '
@@ -638,7 +638,7 @@ def web_server_logs(name):
 
     except pymysql.Error:
         log('ERROR', 'CM', 'Unable to retrieve error logs for server [{}] from SQL database! STACKTRACE: \n{}'
-            .format(name, traceback.print_exc()))
+            .format(name, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_error_logs_sql',
@@ -648,7 +648,7 @@ def web_server_logs(name):
 
     except Exception:
         log('ERROR', 'CM', 'Unable to process error logs for server [{}]! STACKTRACE: \n{}'
-            .format(name, traceback.print_exc()))
+            .format(name, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_error_logs_plain', 'message': 'Unable to process error logs for server '
@@ -733,7 +733,7 @@ def web_all_logs():
 
     except pymysql.Error:
         log('ERROR', 'CM', 'Unable to retrieve error logs from SQL database! STACKTRACE: \n{}'
-            .format(traceback.print_exc()))
+            .format(traceback.format_exc()))
         
         # let web panel know that there's an error on CM side
         json_data = {'status': 'error #all_error_logs_sql', 'message': 'Unable to retrieve error logs from SQL '
@@ -741,7 +741,7 @@ def web_all_logs():
         return jsonify(json_data)
 
     except Exception:
-        log('ERROR', 'CM', 'Unable to process error logs! STACKTRACE: \n{}'.format(traceback.print_exc()))
+        log('ERROR', 'CM', 'Unable to process error logs! STACKTRACE: \n{}'.format(traceback.format_exc()))
         
         # let web panel know that there's an error on CM side
         json_data = {'status': 'error #all_error_logs_plain', 'message': 'Unable to process error logs! Please check '
@@ -761,7 +761,7 @@ if __name__ == '__main__':
         db_manager.check_tables(con, cur, db_prefix)
     except pymysql.Error as e:
         log('ERROR', 'SQL', 'Error when trying to connect to the database OR check/create table! STACKTRACE: \n{}'
-            .format(traceback.print_exc()))
+            .format(traceback.format_exc()))
         log('ERROR', 'CM', 'Force closing program...')
         exit()
 

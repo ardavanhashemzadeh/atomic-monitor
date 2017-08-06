@@ -171,12 +171,6 @@ class Error:
         self.timestamp = _timestamp
 
 
-class ServerName:
-    def __init__(self, _id, _name):
-        self.id = _id
-        self.name = _name
-
-
 class NetData:
     def __init__(self, _name, _sent, _recv):
         self.name = _name
