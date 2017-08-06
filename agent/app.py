@@ -184,6 +184,11 @@ def web_now():
         'boot': {
             'timestamp': boot_time
         },
+        'load': {
+            '1m': load_1min,
+            '5m': load_5min,
+            '15m': load_15min
+        },
         'disks': []
     }
     for disk in disk_list:
