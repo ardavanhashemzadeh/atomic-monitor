@@ -92,7 +92,7 @@ except IOError:
 
 
 # perform logging
-LOG_FORMAT = '{} | {:^6s} | {:^6s} | {}'
+LOG_FORMAT = '{} | {:^6s} | {:^3s} | {}'
 
 
 def log(level, typ, message):
@@ -184,7 +184,7 @@ def scrape_data_server(server):
                     # insert data to SQL db
                     db_manager.insert_ping_data(cur, db_prefix, server.get_id(), 1, ping_result)
 
-                    if int(ping_result) > 200:
+                    if float(ping_result) > 200.0:
                         db_manager.insert_log_data(cur, server.get_id(), 0, 'Slow ping response: {} ms'.format(
                             ping_result))
 
@@ -766,11 +766,11 @@ if __name__ == '__main__':
         exit()
 
     # start scraping thread job!
-    log('INFO', 'SCRAPE', 'Starting scraping thread...')
+    log('INFO', 'CM', 'Starting scraping thread...')
     thd = Thread(target=scrape_data, args=(interval_time, ))
     thd.daemon = True
-    thd.start()  # TODO remove after testing
-    log('INFO', 'SCRAPE', 'Scrape thread started!')
+    thd.start()
+    log('INFO', 'CM', 'Scrape thread started!')
 
     # start Flask service
     log('INFO', 'CM', 'Starting Flask service...')
