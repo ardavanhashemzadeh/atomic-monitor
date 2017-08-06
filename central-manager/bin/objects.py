@@ -178,7 +178,7 @@ class ServerName:
 
 
 class NetData:
-    def __init(self, _name, _sent, _recv):
+    def __init__(self, _name, _sent, _recv):
         self.name = _name
         self.sent = _sent
         self.recv = _recv

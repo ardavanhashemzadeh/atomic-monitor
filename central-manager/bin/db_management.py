@@ -144,7 +144,6 @@ class DBManagement:
                         server_id INT NOT NULL,
                         stamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                         status CHAR(1),
-                        device_id BIGINT NOT NULL AUTO_INCREMENT,
                         PRIMARY KEY (id),
                         FOREIGN KEY (server_id) REFERENCES {0}_server(id));""".format(db_prefix))
 
@@ -155,7 +154,7 @@ class DBManagement:
                         sent BIGINT DEFAULT 0,
                         received BIGINT DEFAULT 0,
                         PRIMARY KEY (id, name),
-                        FOREIGN KEY (id) REFERENCES {0}_network(device_id));""".format(db_prefix))
+                        FOREIGN KEY (id) REFERENCES {0}_network(id));""".format(db_prefix))
 
             # status:
             # 0: offline
@@ -229,7 +228,7 @@ class DBManagement:
                 cur.execute('INSERT INTO {}_network (server_id, status) VALUES ({}, {})'
                             .format(db_prefix, server_id, status))
                 cur.execute('SELECT LAST_INSERT_ID()')
-                device_id = cur.fetch_one()[1]
+                device_id = cur.fetchone()[0]
                 for net in net_data:
                     cur.execute('INSERT INTO {}_network_device (id, name, sent, received) VALUES ({}, \'{}\', {}, {})'
                                 .format(db_prefix, device_id, net.get_name(), net.get_sent(), net.get_recv()))
