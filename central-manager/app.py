@@ -274,10 +274,14 @@ def web_home():
                 # retrieve now status from the agent
                 with urlopen('http://{}:{}/now'.format(json_serv.get_host(), json_serv.get_port())) as url:
                     r = json.loads(url.read().decode())
+                    os_type = r['os']
                     cpu_percent = r['cpu']['percent']
                     ram_percent = r['ram']['percent']
                     swap_percent = r['swap']['percent']
                     boot_timestamp = r['boot']['timestamp']
+                    load_1m = r['load']['onemin']
+                    load_5m = r['load']['fivemin']
+                    load_15m = r['load']['fifteenmin']
                     disk_status = ''
                     disk_percent = 0
                     for disk in r['disks']:
@@ -291,8 +295,8 @@ def web_home():
                             break
 
                     # assign them to HomeServer object
-                    json_serv.set_specs(True, boot_timestamp, ping_result, cpu_percent, ram_percent, swap_percent,
-                                        disk_status, disk_percent)
+                    json_serv.set_specs(True, os_type, boot_timestamp, ping_result, cpu_percent, ram_percent,
+                                        swap_percent, load_1m, load_5m, load_15m, disk_status, disk_percent)
 
                     # add to the list
                     servers.append(json_serv)

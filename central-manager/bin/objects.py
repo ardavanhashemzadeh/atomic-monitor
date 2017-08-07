@@ -36,11 +36,15 @@ class JSONServer:
         self.port = _port
 
         self.online = False
+        self.os = 'question'
         self.boottime = ''
         self.ping = -1
         self.cpu = -1
         self.ram = -1
         self.swap = -1
+        self.load_onemin = -1
+        self.load_fivemin = -1
+        self.load_fifteenmin = -1
         self.disk_status = ''
         self.disk_percent = -1
 
@@ -50,13 +54,18 @@ class JSONServer:
     def get_port(self):
         return self.port
 
-    def set_specs(self, _online, _boottime, _ping, _cpu, _ram, _swap, _disk_status, _disk_percent):
+    def set_specs(self, _online, _os, _boottime, _ping, _cpu, _ram, _swap, _load_1m, _load_5m, _load_15m, _disk_status,
+                  _disk_percent):
         self.online = _online
+        self.os = _os
         self.boottime = _boottime
         self.ping = _ping
         self.cpu = _cpu
         self.ram = _ram
         self.swap = _swap
+        self.load_onemin = _load_1m
+        self.load_fivemin = _load_5m
+        self.load_fifteenmin = _load_15m
         self.disk_status = _disk_status
         self.disk_percent = _disk_percent
 
