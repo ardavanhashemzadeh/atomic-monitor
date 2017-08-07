@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, request
 from configparser import ConfigParser
 from uuid import getnode as get_mac
+from sys import platform as ostype
 from datetime import datetime
 from threading import Thread
 import traceback
@@ -23,6 +24,7 @@ from bin.cpu import CPU
 VERSION = '1.0'
 
 # global attributes
+os_type = ''
 ram_percent = 0
 ram_used = 0
 ram_total = 0
@@ -151,9 +153,9 @@ def web_specs():
         'ram': total_ram,
         'boot': boot_time,
         'load': {
-            '1min': load_1m,
-            '5min': load_5m,
-            '15min': load_15m
+            'onemin': load_1m,
+            'fivemin': load_5m,
+            'fifteenmin': load_15m
         }
     }
 
@@ -169,6 +171,7 @@ def web_now():
     # create json object
     json_data = {
         'version': VERSION,
+        'os': os_type,
         'ram': {
             'percent': ram_percent,
             'used': ram_used,
@@ -186,9 +189,9 @@ def web_now():
             'timestamp': boot_time
         },
         'load': {
-            '1m': load_1min,
-            '5m': load_5min,
-            '15m': load_15min
+            'onemin': load_1min,
+            'fivemin': load_5min,
+            'fifteenmin': load_15min
         },
         'disks': []
     }
@@ -207,6 +210,7 @@ def web_all():
     # create json object
     json_data = {
         'version': VERSION,
+        'os': os_type,
         'memory': {
             'ram': {
                 'percent': ram_percent,
@@ -225,9 +229,9 @@ def web_all():
         },
         'network': [],
         'load': {
-            '1min': load_1min,
-            '5min': load_5min,
-            '15min': load_15min
+            'onemin': load_1min,
+            'fivemin': load_5min,
+            'fifteenmin': load_15min
         }
     }
     for nic in network_list:
@@ -241,10 +245,20 @@ def web_all():
 
 # auto update values
 def specs_updater():
-    global ram_percent, ram_used, ram_total, swap_percent, swap_used, swap_total, cpu_percent, boot_time, network_list, \
-        disk_list, load_1min, load_5min, load_15min
+    global os_type, ram_percent, ram_used, ram_total, swap_percent, swap_used, swap_total, cpu_percent, boot_time, \
+        network_list, disk_list, load_1min, load_5min, load_15min
 
     while True:
+        # update OS type
+        if ostype == 'linux' or ostype == 'linux2':
+            os_type = 'linux'
+        elif ostype == 'darwin':
+            os_type = 'apple'
+        elif ostype == 'win32':
+            os_type = 'windows'
+        else:
+            os_type = 'question'
+
         # update RAM info
         ram_percent, ram_used, ram_total = sram.get_memory_usage()
 
