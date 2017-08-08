@@ -5,7 +5,7 @@ def gb_convert(byts):
     return byts / 1024 / 1024 / 1024
 
 
-class RAM:
+class Memory:
     # get RAM usage
     def get_memory_usage(self):
         status = psutil.virtual_memory()

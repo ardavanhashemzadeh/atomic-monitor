@@ -15,8 +15,8 @@ import time
 from bin.boot_time import BootTime
 from bin.load_avg import LoadAvg
 from bin.network import Network
+from bin.ram import Memory
 from bin.disk import Disk
-from bin.ram import RAM
 from bin.cpu import CPU
 
 
@@ -115,7 +115,7 @@ def log(level, typ, message):
 
 
 # setup variables
-sram = RAM()
+smemory = Memory()
 scpu = CPU()
 net = Network()
 load = LoadAvg()
@@ -260,10 +260,10 @@ def specs_updater():
             os_type = 'question'
 
         # update RAM info
-        ram_percent, ram_used, ram_total = sram.get_memory_usage()
+        ram_percent, ram_used, ram_total = smemory.get_memory_usage()
 
         # update swap info
-        swap_percent, swap_used, swap_total = sram.get_swap_usage()
+        swap_percent, swap_used, swap_total = smemory.get_swap_usage()
 
         # update cpu info
         cpu_percent = scpu.get_usage()
