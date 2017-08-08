@@ -15,7 +15,7 @@ import time
 from bin.boot_time import BootTime
 from bin.load_avg import LoadAvg
 from bin.network import Network
-from bin.ram import Memory
+from bin.memory import Memory
 from bin.disk import Disk
 from bin.cpu import CPU
 
