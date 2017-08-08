@@ -88,10 +88,10 @@ $(document).ready(function() {
 				
 				// ping color
 				var pingColor = 'good';
-				if(ping > 100 && ping <= 200) {
+				if(ping >= 100 && ping < 200) {
 					pingColor = 'warn';
 				}
-				else if(ping > 200) {
+				else if(ping >= 200) {
 					pingColor = 'bad';
 				}
 
