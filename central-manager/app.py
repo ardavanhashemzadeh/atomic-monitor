@@ -527,11 +527,11 @@ def web_graph(server_id):
         return jsonify(json_data)
 
 
-@app.route('/specs/<name>')
-def web_specs(name):
+@app.route('/specs/<server_id>')
+def web_specs(server_id):
     # retrieve hostname & port for server
     try:
-        cur.execute('SELECT hostname, port FROM {}_server WHERE name=%s'.format(db_prefix), name)
+        cur.execute('SELECT hostname, port FROM {}_server WHERE id=%d'.format(db_prefix), server_id)
         row = cur.fetchone()
         hostname = row[0]
         port = row[1]
@@ -541,8 +541,8 @@ def web_specs(name):
         if ping_result is -1:
             # create json data
             json_data = {'status': 'error #specs_offline',
-                         'message': 'Unable to retrieve hardware specifications for server [{}] because the server is '
-                                    'not responding to ping! Either it\'s broken or offline.'.format(name)}
+                         'message': 'Unable to retrieve hardware specifications for server ID [{}] because the server '
+                                    'is not responding to ping! Either it\'s broken or offline.'.format(server_id)}
             
             # let webpanel know that the agent server can't be reached
             return jsonify(json_data)
@@ -575,26 +575,26 @@ def web_specs(name):
             return jsonify(json_data)
 
     except pymysql.Error:
-        log('ERROR', 'CM', 'Unable to retrieve info for server [{}] from SQL database! STACKTRACE: \n{}'
-            .format(name, traceback.format_exc()))
+        log('ERROR', 'CM', 'Unable to retrieve info for server ID [{}] from SQL database! STACKTRACE: \n{}'
+            .format(server_id, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
-        json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server [{}] from SQL '
-                                                              'database! Please check logs.'.format(name)}
+        json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server ID [{}] from SQL '
+                                                              'database! Please check logs.'.format(server_id)}
         return jsonify(json_data)
 
     except Exception:
-        log('ERROR', 'CM', 'Unable to process graph info for server [{}]! STACKTRACE: \n{}'
-            .format(name, traceback.format_exc()))
+        log('ERROR', 'CM', 'Unable to process graph info for server ID [{}]! STACKTRACE: \n{}'
+            .format(server_id, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
-        json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server [{}]! Please '
-                                                                'check logs.'.format(name)}
+        json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server ID [{}]! '
+                                                                'Please check logs.'.format(server_id)}
         return jsonify(json_data)
 
 
-@app.route('/server_logs/<name>/')
-def web_server_logs(name):
+@app.route('/server_logs/<server_id>/')
+def web_server_logs(server_id):
     level = request.args.get('level', -1, type=int)
     count = request.args.get('count', -1, type=int)
     search_for = request.args.get('search_for', '', type=str)
@@ -604,7 +604,7 @@ def web_server_logs(name):
     # retrieve errors
     try:
         if level is -1:
-            sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\''.format(db_prefix, name)
+            sql_statement = '(SELECT * FROM {}_log WHERE server_id=\'{}\''.format(db_prefix, server_id)
             if search_for is not '':
                 sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
             if filter_out is not '':
@@ -614,7 +614,8 @@ def web_server_logs(name):
             else:
                 sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
         else:
-            sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\' AND type={}'.format(db_prefix, name, level)
+            sql_statement = '(SELECT * FROM {}_log WHERE server_id=\'{}\' AND type={}'.format(db_prefix, server_id,
+                                                                                              level)
             if search_for is not '':
                 sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
             if filter_out is not '':
@@ -641,28 +642,29 @@ def web_server_logs(name):
         return jsonify(json_data)
 
     except pymysql.Error:
-        log('ERROR', 'CM', 'Unable to retrieve error logs for server [{}] from SQL database! STACKTRACE: \n{}'
-            .format(name, traceback.format_exc()))
+        log('ERROR', 'CM', 'Unable to retrieve error logs for server ID [{}] from SQL database! STACKTRACE: \n{}'
+            .format(server_id, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_error_logs_sql',
-                     'message': 'Unable to retrieve error logs for server [{}] from SQL database! Please check '
-                                'logs.'.format(name)}
+                     'message': 'Unable to retrieve error logs for server ID [{}] from SQL database! Please check '
+                                'logs.'.format(server_id)}
         return jsonify(json_data)
 
     except Exception:
-        log('ERROR', 'CM', 'Unable to process error logs for server [{}]! STACKTRACE: \n{}'
-            .format(name, traceback.format_exc()))
+        log('ERROR', 'CM', 'Unable to process error logs for server ID [{}]! STACKTRACE: \n{}'
+            .format(server_id, traceback.format_exc()))
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #server_error_logs_plain', 'message': 'Unable to process error logs for server '
-                                                                            '[{}]! Please check logs.'.format(name)}
+                                                                            'ID [{}]! Please check logs.'
+            .format(server_id)}
         return jsonify(json_data)
 
 
 @app.route('/all_logs/')
 def web_all_logs():
-    name = request.args.get('name', '', type=str)
+    server_id = request.args.get('id', '', type=str)
     level = request.args.get('level', -1, type=int)
     count = request.args.get('count', -1, type=int)
     search_for = request.args.get('search_for', '', type=str)
@@ -673,7 +675,7 @@ def web_all_logs():
     try:
         if name is not '':
             if level is -1:
-                sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\''.format(db_prefix, name)
+                sql_statement = '(SELECT * FROM {}_log WHERE server_id=\'{}\''.format(db_prefix, server_id)
                 if search_for is not '':
                     sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
                 if filter_out is not '':
@@ -683,8 +685,8 @@ def web_all_logs():
                 else:
                     sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
             else:
-                sql_statement = '(SELECT * FROM {}_log WHERE server_name=\'{}\' AND type={}'.format(db_prefix, name,
-                                                                                                    level)
+                sql_statement = '(SELECT * FROM {}_log WHERE server_id=\'{}\' AND type={}'.format(db_prefix, server_id,
+                                                                                                  level)
                 if search_for is not '':
                     sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
                 if filter_out is not '':
