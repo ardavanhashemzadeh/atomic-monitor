@@ -129,9 +129,13 @@ app = Flask(__name__)
 def web_specs():
     # retrieve current system hardware specs
     operating_system = platform.platform()
-    cpu_brand = cpuinfo.get_cpu_info()['brand']
-    cpu_cores = '{} cores @ {}'.format(cpuinfo.get_cpu_info()['count'],
-                                       cpuinfo.get_cpu_info()['hz_advertised'])
+    try:
+        cpu_brand = cpuinfo.get_cpu_info()['brand']
+        cpu_cores = '{} cores @ {}'.format(cpuinfo.get_cpu_info()['count'],
+                                           cpuinfo.get_cpu_info()['hz_advertised'])
+    except KeyError:
+        cpu_brand = 'unknown'
+        cpu_cores = '{} cores total'.format(cpuinfo.get_cpu_info()['count'])
     total_ram = '{} GB'.format(round(psutil.virtual_memory().total / 1024 / 1024 / 1024), 0)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(('8.8.8.8', 1))
@@ -256,6 +260,8 @@ def specs_updater():
             os_type = 'apple'
         elif ostype == 'win32':
             os_type = 'windows'
+        elif 'bsd' in ostype:
+            os_type = 'desktop'
         else:
             os_type = 'question'
 
