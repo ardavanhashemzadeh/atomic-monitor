@@ -222,21 +222,21 @@ def scrape_data_server(server):
 
                     # insert load average data to SQL db
                     db_manager.insert_load_data(cur, db_prefix, server.get_id(), 1,
-                                                data['load']['1min'],
-                                                data['load']['5min'],
-                                                data['load']['15min'])
+                                                data['load']['onemin'],
+                                                data['load']['fivemin'],
+                                                data['load']['fifteenmin'])
 
                     # log if load average is 1.00 or above
-                    if data['load']['1min'] != "NULL":
-                        if float(data['load']['1min']) > 1.00:
+                    if data['load']['onemin'] != "NULL":
+                        if float(data['load']['onemin']) > 1.00:
                             db_manager.insert_log_data(cur, server.get_id(), 0, 'High 1m load usage: {}'.format(
-                                data['load']['1min']))
-                        elif float(data['load']['5min']) > 1.00:
+                                data['load']['onemin']))
+                        elif float(data['load']['fivemin']) > 1.00:
                             db_manager.insert_log_data(cur, server.get_id(), 0, 'High 5m load usage: {}'.format(
-                                data['load']['5min']))
-                        elif float(data['load']['15min']) > 1.00:
+                                data['load']['fivemin']))
+                        elif float(data['load']['fifteenmin']) > 1.00:
                             db_manager.insert_log_data(cur, server.get_id(), 0, 'High 15m load usage: {}'.format(
-                                data['load']['15min']))
+                                data['load']['fifteenmin']))
 
             except pymysql.Error:
                 log('ERROR', 'SCRAPE', 'Unable to access server [{} ({})]! Please make sure the port is open on that'
@@ -348,10 +348,11 @@ def web_server_names():
         
         # convert to json data
         json_data = {
-            'server_names': []
+            'status': 'good',
+            'data': []
         }
         for server_name in server_names:
-            json_data['server_names'].append(server_name)
+            json_data['data'].append(server_name)
 
         # print json data
         return jsonify(json_data)
@@ -664,26 +665,31 @@ def web_server_logs(server_id):
 
 @app.route('/all_logs/')
 def web_all_logs():
-    server_id = request.args.get('id', '', type=str)
-    level = request.args.get('level', -1, type=int)
-    count = request.args.get('count', -1, type=int)
+    server_id = int(request.args.get('id', -1, type=int))
+    level = int(request.args.get('level', -1, type=int))
+    limit = int(request.args.get('limit', 50, type=int))
     search_for = request.args.get('search_for', '', type=str)
     filter_out = request.args.get('filter_out', '', type=str)
 
+    # TODO set anti-hacking programs to prevent bad values for server_id, level, limit, search_for, & filter_out
+
+    server_names = {}
     errors = list()
     # retrieve errors
     try:
-        if name is not '':
+        cur.execute('SELECT id, name FROM {}_server'.format(db_prefix))
+
+        for row in cur.fetchall():
+            server_names[int(row[0])] = row[1]
+
+        if server_id > 0:
             if level is -1:
                 sql_statement = '(SELECT * FROM {}_log WHERE server_id=\'{}\''.format(db_prefix, server_id)
                 if search_for is not '':
                     sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
                 if filter_out is not '':
                     sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
-                if count is -1:
-                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
-                else:
-                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+                sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(limit)
             else:
                 sql_statement = '(SELECT * FROM {}_log WHERE server_id=\'{}\' AND type={}'.format(db_prefix, server_id,
                                                                                                   level)
@@ -691,40 +697,29 @@ def web_all_logs():
                     sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
                 if filter_out is not '':
                     sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
-                if count is -1:
-                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
-                else:
-                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+                sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(limit)
         else:
             if level is -1:
                 sql_statement = '(SELECT * FROM {}_log'.format(db_prefix)
                 if search_for is not '':
-                    if 'WHERE' not in sql_statement:
-                        sql_statement += ' WHERE'
-                    sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
+                    sql_statement += 'WHERE msg LIKE \'{}\''.format('%{}%'.format(search_for))
                 if filter_out is not '':
                     if 'WHERE' not in sql_statement:
                         sql_statement += ' WHERE'
                     sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
-                if count is -1:
-                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
-                else:
-                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+                sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(limit)
             else:
                 sql_statement = '(SELECT * FROM {}_log WHERE type={}'.format(db_prefix, level)
                 if search_for is not '':
                     sql_statement += ' AND msg LIKE \'{}\''.format('%{}%'.format(search_for))
                 if filter_out is not '':
                     sql_statement += ' AND msg NOT LIKE \'{}\''.format('%{}%'.format(filter_out))
-                if count is -1:
-                    sql_statement += ' ORDER BY id DESC) ORDER BY id DESC'
-                else:
-                    sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(count)
+                sql_statement += ' ORDER BY id DESC LIMIT {}) ORDER BY id DESC'.format(limit)
 
         cur.execute(sql_statement)
 
         for row in cur.fetchall():
-            errors.append(Error(row[3], row[1], row[4], row[2]))
+            errors.append(Error(row[3], server_names[int(row[1])], row[4], row[2]))
 
         # convert to json
         json_data = {
