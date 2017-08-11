@@ -1,11 +1,15 @@
 // get list of servers
 $(document).ready(function() {
-	Pace.start();
 	//url: 'http://' + CONFIG.cm_host + ':' + CONFIG.cm_port + '/home',
-	var url = 'http://cm.watson.io:5001/home';
 	$.ajax({
-		url: 'get_data.php?url=' + encodeURIComponent(url),
+		data: {
+			path: 'http://cm.watson.io:5001/home',
+			type: 'home'
+		},
+		url: 'get_data.php',
 		success: function(data) {
+			Pace.start();
+
 			var down_count = 0;
 			var down_servers = [];
 			var warn_count = 0;
@@ -238,7 +242,8 @@ $(document).ready(function() {
 			else {
 				$('#status-tofix-servers').text(maintenance_servers.join(', '));
 			}
+			
+			Pace.stop();
 		}
 	});
-	Pace.stop();
 });

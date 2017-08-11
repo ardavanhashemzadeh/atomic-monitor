@@ -41,20 +41,16 @@
                 <div id='alerts-menu'>
                     <h3>Filter Options</h3>
                     <div id='alerts-form'>
-                        <label>Filter logs by alert level:</label>
-                        <select name='alertFilterLevel'>
-                            <option>All</option>
-                            <option>Warning</option>
-                            <option>Error</option>
+                        <label>Filter alerts by level:</label>
+                        <select id='alertFilterLevel'>
+                            <option value='-1'>All</option>
+                            <option value='0'>Warning</option>
+                            <option value='1'>Error</option>
                         </select>
-                        <label>Filter logs by server:</label>
-                        <select name='alertFilterServer'>
-                            <option>UbuntuS-MAIN</option>
-                            <option>UbuntuS-DB</option>
-                            <option>UbuntuS-MM</option>
-                        </select>
-                        <label># of error logs to view:</label>
-                        <select name='alertNumLogs'>
+                        <label>Filter alerts by server:</label>
+                        <select id='alertFilterServer'></select>
+                        <label># of alerts to view:</label>
+                        <select id='alertNumLogs'>
                             <option>50</option>
                             <option>100</option>
                             <option>200</option>
@@ -62,42 +58,15 @@
                             <option>500</option>
                         </select>
                         <label>Keywords to search for:</label>
-                        <input type='text' name='alertKeywordKeep' />
+                        <input type='text' id='alertKeywordKeep' />
                         <label>Keywords to filter out:</label>
-                        <input type='text' name='alertKeywordRemove' />
-                        <button onclick=''>Submit</button>
+                        <input type='text' id='alertKeywordRemove' />
+                        <button onclick='retrieveErrorLogs()'>Submit</button>
                     </div>
                 </div>
                 <div id='alerts-log'>
-                    <div class='log'>
-                        <div class='log-level'><span class='bad'>Error</span></div>
-                        <div class='log-server'>UbuntuS-MAIN</div>
-                        <div class='log-reason'>Server not responding to ping</div>
-                        <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
-                    </div>
-                    <div class='log'>
-                        <div class='log-level'><span class='warn'>Warning</span></div>
-                        <div class='log-server'>UbuntuS-MAIN</div>
-                        <div class='log-reason'>Slow ping response: 433ms</div>
-                        <div class='log-timestamp'><span>10 min ago</span> (7/20/17 23:34:33)</div>
-                    </div>
-                    <div class='log'>
-                        <div class='log-level'><span class='bad'>Error</span></div>
-                        <div class='log-server'>UbuntuS-MAIN</div>
-                        <div class='log-reason'>Server not responding to ping</div>
-                        <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
-                    </div>
-                    <div class='log'>
-                        <div class='log-level'><span class='warn'>Warning</span></div>
-                        <div class='log-server'>UbuntuS-MAIN</div>
-                        <div class='log-reason'>Slow ping response: 433ms</div>
-                        <div class='log-timestamp'><span>10 min ago</span> (7/20/17 23:34:33)</div>
-                    </div>
-                    <div class='log'>
-                        <div class='log-level'><span class='bad'>Error</span></div>
-                        <div class='log-server'>UbuntuS-MAIN</div>
-                        <div class='log-reason'>Server not responding to ping</div>
-                        <div class='log-timestamp'><span>3 min ago</span> (7/20/17 23:34:33)</div>
+                    <div id='empty'>
+                        <h3>No alerts found :(</h3>
                     </div>
                 </div>
             </div>
