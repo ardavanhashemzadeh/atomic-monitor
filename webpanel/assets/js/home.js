@@ -29,21 +29,18 @@ $(document).ready(function() {
 				var type = get_icon(data.data[i].typ);
 				var ping = Math.ceil(data.data[i].ping);
 				var os = data.data[i].os;
-				var uptime = convert_uptime(data.data[i].boottime);
+				if(online) {
+					var uptime = convert_uptime(data.data[i].boottime);
+				}
+				else {
+					var uptime = 'offline';
+				}
 				var load_1m = data.data[i].load_onemin;
 				var load_5m = data.data[i].load_fivemin;
 				var load_15m = data.data[i].load_fifteenmin;
 				var cpu = data.data[i].cpu;
 				var ram = data.data[i].ram;
-				var disk = '0'; // TODO add disk status to /home in cm
-				var network = '0'; // TODO add network status to /home in cm
-				var diskStatus = '';
-				if(data.data[i].disk_percent == 0) {
-					diskStatus = 'Good';
-				}
-				else {
-					diskStatus = disk[i].disk_status;
-				}
+				var diskStatus = data.data[i].disk_status;
 				
 				// determine server health
 				// 0 = good
@@ -75,7 +72,7 @@ $(document).ready(function() {
 						else if(ram >= 90) {
 							barColor = 'warn';
 						}
-						else if(diskStatus != 'Good') {
+						else if(diskStatus != 'Good' && diskStatus != 'Server not responding') {
 							barColor = 'warn';
 						}
 					}
@@ -92,10 +89,15 @@ $(document).ready(function() {
 				
 				// ping color
 				var pingColor = 'good';
-				if(ping >= 100 && ping < 200) {
-					pingColor = 'warn';
+				if(online) {
+					if(ping >= 100 && ping < 200) {
+						pingColor = 'warn';
+					}
+					else if(ping >= 200) {
+						pingColor = 'bad';
+					}
 				}
-				else if(ping >= 200) {
+				else {
 					pingColor = 'bad';
 				}
 
@@ -103,29 +105,41 @@ $(document).ready(function() {
 				var load_1mColor = 'good';
 				var load_5mColor = 'good';
 				var load_15mColor = 'good';
-				if(load_1m >= .80 && load_1m < 1.00) {
-					load_1mColor = 'warn';
+				if(online) {
+					if(load_1m >= .80 && load_1m < 1.00) {
+						load_1mColor = 'warn';
+					}
+					else if(load_1m >= 1.00) {
+						load_1mColor = 'bad';
+					}
+					if(load_5m >= .80 && load_5m < 1.00) {
+						load_5mColor = 'warn';
+					}
+					else if(load_5m >= 1.00) {
+						load_5mColor = 'bad';
+					}
+					if(load_15m >= .80 && load_15m < 1.00) {
+						load_15mColor = 'warn';
+					}
+					else if(load_15m >= 1.00) {
+						load_15mColor = 'bad';
+					}
 				}
-				else if(load_1m >= 1.00) {
+				else {
 					load_1mColor = 'bad';
-				}
-				if(load_5m >= .80 && load_5m < 1.00) {
-					load_5mColor = 'warn';
-				}
-				else if(load_5m >= 1.00) {
 					load_5mColor = 'bad';
-				}
-				if(load_15m >= .80 && load_15m < 1.00) {
-					load_15mColor = 'warn';
-				}
-				else if(load_15m >= 1.00) {
 					load_15mColor = 'bad';
 				}
 
 				// disk color
 				var diskColor = 'good';
-				if(diskStatus != 'Good') {
-					diskColor = 'warn';
+				if(online) {
+					if(diskStatus != 'Good') {
+						diskColor = 'warn';
+					}
+				}
+				else {
+					diskColor = 'bad';
 				}
 
 				// add servers
@@ -160,16 +174,17 @@ $(document).ready(function() {
 
 				// update info for status boxes
 				good_total++;
-				if(barColor == 'bad') {
-					down_count++;
-					down_servers.push(name);
+				if(online) {
+					good_count++;
+
 				}
-				else if(barColor == 'warn') {
+				if(barColor == 'warn') {
 					warn_count++;
 					warn_servers.push(name);
 				}
-				else if(barColor == 'good') {
-					good_count++;
+				else if(barColor == 'bad') {
+					down_count++;
+					down_servers.push(name);
 				}
 				else if(barColor == 'disabled') {
 					disabled_count++;
