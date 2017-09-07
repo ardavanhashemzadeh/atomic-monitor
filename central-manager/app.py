@@ -129,9 +129,9 @@ def ping_server(host):
     # ping server
     try:
         if 'Windows' in platform.platform():
-            ping_result = check_output(['ping', '-n', '1', '{}'.format(host)]).decode("utf-8")
+            ping_result = check_output(['ping', '-n', '1', '-w', '1', '{}'.format(host)]).decode("utf-8")
         else:
-            ping_result = check_output(['ping', '-c', '1', '{}'.format(host)]).decode("utf-8")
+            ping_result = check_output(['ping', '-c', '1', '-W', '1', '{}'.format(host)]).decode("utf-8")
 
         if 'time<' in ping_result:
             ping_result = re.search('time<([\d.]+)', ping_result).group(1)
@@ -282,15 +282,15 @@ def web_home():
                     load_1m = r['load']['onemin']
                     load_5m = r['load']['fivemin']
                     load_15m = r['load']['fifteenmin']
-                    disk_status = ''
+                    disk_status = 'Good'
                     disk_percent = 0
                     for disk in r['disks']:
                         if 70 <= disk['percent'] < 90:
-                            disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
+                            disk_status = "Device '{}' at {}% full".format(disk['name'], disk['percent'])
                             disk_percent = disk['percent']
                             break
                         elif disk['percent'] >= 90:
-                            disk_status += "Device '{}' at {}% full".format(disk['name'], disk['percent'])
+                            disk_status = "Device '{}' at {}% full".format(disk['name'], disk['percent'])
                             disk_percent = disk['percent']
                             break
 
@@ -303,7 +303,7 @@ def web_home():
 
             else:
                 # assign empty values to HomeServer object
-                json_serv.set_specs(True, 0, 0, 0, 0, 0, 'Server not responding', 0)
+                json_serv.set_specs(False, 'times', 0, 0, 0, 0, 0, 0, 0, 0, 'Server not responding', 0)
 
                 # add to the list
                 servers.append(json_serv)
