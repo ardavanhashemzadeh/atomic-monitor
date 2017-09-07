@@ -417,9 +417,9 @@ def web_graph(server_id):
                 ram_max = r['ram']['total']
                 swap_current = r['swap']['percent']
                 swap_max = r['swap']['total']
-                load_1m = r['load']['1m']
-                load_5m = r['load']['5m']
-                load_15m = r['load']['15m']
+                load_1m = r['load']['onemin']
+                load_5m = r['load']['fivemin']
+                load_15m = r['load']['fifteenmin']
                 for disk in r['disks']:
                     disk_device_list.append(disk['name'])
                     disk_data_list.append(disk['percent'])
