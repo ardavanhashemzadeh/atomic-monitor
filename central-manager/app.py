@@ -145,21 +145,21 @@ def ping_server(host):
 
 
 # scrape data from each agent (server)
-def scrape_data(time_interval):
+def scrape_data(_cur, _con, time_interval):
     while True:
         try:
             count = 0
 
             # get list of servers
-            cur.execute('SELECT * FROM {}_server'.format(db_prefix))
-            for row in cur.fetchall():
+            _cur.execute('SELECT * FROM {}_server'.format(db_prefix))
+            for row in _cur.fetchall():
 
                 # go through each server and scrape data
-                scrape_data_server(Server(row[0], row[1], row[2], row[3], row[4], int(row[5])))
+                scrape_data_server(_cur, Server(row[0], row[1], row[2], row[3], row[4], int(row[5])))
                 count += 1
 
             # commit changes to database
-            con.commit()
+            _con.commit()
 
             log('INFO', 'CM', 'Successfully retrieved and logged data on {} server(s)!'.format(count))
 
@@ -172,7 +172,7 @@ def scrape_data(time_interval):
 
 
 # process through a server in thread mode
-def scrape_data_server(server):
+def scrape_data_server(_cur, server):
     try:
         ping_result = ping_server(server.get_host())
         if ping_result is not -1:
@@ -182,14 +182,14 @@ def scrape_data_server(server):
                     data = json.loads(url.read().decode())
 
                     # insert data to SQL db
-                    db_manager.insert_ping_data(cur, db_prefix, server.get_id(), 1, ping_result)
+                    db_manager.insert_ping_data(_cur, db_prefix, server.get_id(), 1, ping_result)
 
                     if float(ping_result) > 200.0:
-                        db_manager.insert_log_data(cur, server.get_id(), 0, 'Slow ping response: {} ms'.format(
+                        db_manager.insert_log_data(_cur, server.get_id(), 0, 'Slow ping response: {} ms'.format(
                             ping_result))
 
                     # insert ram data to SQL db
-                    db_manager.insert_memory_data(cur, db_prefix, server.get_id(), 1,
+                    db_manager.insert_memory_data(_cur, db_prefix, server.get_id(), 1,
                                                   data['memory']['ram']['percent'],
                                                   data['memory']['ram']['used'],
                                                   data['memory']['ram']['total'],
@@ -199,29 +199,29 @@ def scrape_data_server(server):
 
                     # log if RAM/swap is 90% or above
                     if data['memory']['ram']['percent'] >= 90:
-                        db_manager.insert_log_data(cur, server.get_id(), 0, 'High RAM usage: {}%'.format(
+                        db_manager.insert_log_data(_cur, server.get_id(), 0, 'High RAM usage: {}%'.format(
                             data['memory']['ram']['percent']))
                     if data['memory']['swap']['percent'] >= 90:
-                        db_manager.insert_log_data(cur, server.get_id(), 0, 'High swap usage: {}%'.format(
+                        db_manager.insert_log_data(_cur, server.get_id(), 0, 'High swap usage: {}%'.format(
                             data['memory']['swap']['percent']))
 
                     # insert CPU data to SQL db
-                    db_manager.insert_cpu_data(cur, db_prefix, server.get_id(), 1,
+                    db_manager.insert_cpu_data(_cur, db_prefix, server.get_id(), 1,
                                                data['cpu']['percent'])
 
                     # log if CPU is 90% or above
                     if data['cpu']['percent'] >= 90:
-                        db_manager.insert_log_data(cur, server.get_id(), 0, 'High CPU usage: {}%'.format(
+                        db_manager.insert_log_data(_cur, server.get_id(), 0, 'High CPU usage: {}%'.format(
                             data['cpu']['percent']))
 
                     # insert network data to SQL db
                     net_data = []
                     for net_nic in data['network']:
                         net_data.append(NetData(net_nic['name'], net_nic['sent'], net_nic['recv']))
-                    db_manager.insert_net_data(cur, db_prefix, server.get_id(), 1, net_data)
+                    db_manager.insert_net_data(_cur, db_prefix, server.get_id(), 1, net_data)
 
                     # insert load average data to SQL db
-                    db_manager.insert_load_data(cur, db_prefix, server.get_id(), 1,
+                    db_manager.insert_load_data(_cur, db_prefix, server.get_id(), 1,
                                                 data['load']['onemin'],
                                                 data['load']['fivemin'],
                                                 data['load']['fifteenmin'])
@@ -229,13 +229,13 @@ def scrape_data_server(server):
                     # log if load average is 1.00 or above
                     if data['load']['onemin'] != "NULL":
                         if float(data['load']['onemin']) > 1.00:
-                            db_manager.insert_log_data(cur, server.get_id(), 0, 'High 1m load usage: {}'.format(
+                            db_manager.insert_log_data(_cur, server.get_id(), 0, 'High 1m load usage: {}'.format(
                                 data['load']['onemin']))
                         elif float(data['load']['fivemin']) > 1.00:
-                            db_manager.insert_log_data(cur, server.get_id(), 0, 'High 5m load usage: {}'.format(
+                            db_manager.insert_log_data(_cur, server.get_id(), 0, 'High 5m load usage: {}'.format(
                                 data['load']['fivemin']))
                         elif float(data['load']['fifteenmin']) > 1.00:
-                            db_manager.insert_log_data(cur, server.get_id(), 0, 'High 15m load usage: {}'.format(
+                            db_manager.insert_log_data(_cur, server.get_id(), 0, 'High 15m load usage: {}'.format(
                                 data['load']['fifteenmin']))
 
             except pymysql.Error:
@@ -243,12 +243,12 @@ def scrape_data_server(server):
                                        ' server!'.format(server.get_name(), server.get_id()))
 
         else:
-            db_manager.insert_ping_data(cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_memory_data(cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_cpu_data(cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_net_data(cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_load_data(cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_log_data(cur, db_prefix, server.get_id(), 1, 'Server not responding to ping')
+            db_manager.insert_ping_data(_cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_memory_data(_cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_cpu_data(_cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_net_data(_cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_load_data(_cur, db_prefix, server.get_id(), 0)
+            db_manager.insert_log_data(_cur, db_prefix, server.get_id(), 1, 'Server not responding to ping')
             log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(server.get_name()))
 
     except Exception:
@@ -426,6 +426,8 @@ def web_graph(server_id):
 
         # retrieve timestamps
         timestamps = []
+        log('INFO', 'CM', 'SELECT stamp FROM {}_cpu WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
+            .format(db_prefix, server_id, str_start, str_end))
         cur.execute('SELECT stamp FROM {}_cpu WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
                     .format(db_prefix, server_id, str_start, str_end))
         for row in cur.fetchall():
@@ -754,9 +756,11 @@ def web_all_logs():
 if __name__ == '__main__':
     # check to make sure the database has the required tables
     log('INFO', 'CM', 'Starting program...')
+    con_int, cur_int = None, None
     try:
         # initiate connection
         con, cur = db_manager.connect_to_db(db_host, db_port, db_user, db_pass, db_name)
+        con_int, cur_int = db_manager.connect_to_db(db_host, db_port, db_user, db_pass, db_name)
 
         # NSA'ing through tables in database
         db_manager.check_tables(con, cur, db_prefix)
@@ -768,7 +772,7 @@ if __name__ == '__main__':
 
     # start scraping thread job!
     log('INFO', 'CM', 'Starting scraping thread...')
-    thd = Thread(target=scrape_data, args=(interval_time, ))
+    thd = Thread(target=scrape_data, args=(con_int, cur_int, interval_time, ))
     thd.daemon = True
     thd.start()
     log('INFO', 'CM', 'Scrape thread started!')
