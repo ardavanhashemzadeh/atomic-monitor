@@ -14,7 +14,7 @@ import json
 import re
 import os
 
-from bin.objects import Server, JSONServer, Spec, Graph, Error, NetData
+from bin.objects import Server, JSONServer, Spec, Disk, Graph, Error, NetData
 from bin.db_management import DBManagement
 
 
@@ -243,13 +243,15 @@ def scrape_data_server(_cur, server):
                                        ' server!'.format(server.get_name(), server.get_id()))
 
         else:
-            db_manager.insert_ping_data(_cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_memory_data(_cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_cpu_data(_cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_net_data(_cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_load_data(_cur, db_prefix, server.get_id(), 0)
-            db_manager.insert_log_data(_cur, db_prefix, server.get_id(), 1, 'Server not responding to ping')
-            log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(server.get_name()))
+            if server.get_mode() is not 2:
+                db_manager.insert_ping_data(_cur, db_prefix, server.get_id(), 0)
+                db_manager.insert_memory_data(_cur, db_prefix, server.get_id(), 0)
+                db_manager.insert_cpu_data(_cur, db_prefix, server.get_id(), 0)
+                db_manager.insert_net_data(_cur, db_prefix, server.get_id(), 0)
+                db_manager.insert_load_data(_cur, db_prefix, server.get_id(), 0)
+                db_manager.insert_log_data(_cur, db_prefix, server.get_id(), 1, 'Server not responding to ping')
+                log('WARN', 'SCRAPE', 'Server [{}] is not responding, skipping...'.format(server.get_name()))
+
 
     except Exception:
         traceback.format_exc()
@@ -426,8 +428,6 @@ def web_graph(server_id):
 
         # retrieve timestamps
         timestamps = []
-        log('INFO', 'CM', 'SELECT stamp FROM {}_cpu WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
-            .format(db_prefix, server_id, str_start, str_end))
         cur.execute('SELECT stamp FROM {}_cpu WHERE server_id={} AND stamp BETWEEN \'{}\' AND \'{}\';'
                     .format(db_prefix, server_id, str_start, str_end))
         for row in cur.fetchall():
@@ -530,14 +530,15 @@ def web_graph(server_id):
         return jsonify(json_data)
 
 
-@app.route('/specs/<server_id>')
+@app.route('/specs/<server_id>/')
 def web_specs(server_id):
     # retrieve hostname & port for server
     try:
-        cur.execute('SELECT hostname, port FROM {}_server WHERE id=%d'.format(db_prefix), server_id)
+        cur.execute('SELECT type, hostname, port FROM {}_server WHERE id={}'.format(db_prefix, server_id))
         row = cur.fetchone()
-        hostname = row[0]
-        port = row[1]
+        server_type = row[0]
+        hostname = row[1]
+        port = row[2]
 
         # check if server is online & responding
         ping_result = ping_server(hostname)
@@ -545,7 +546,7 @@ def web_specs(server_id):
             # create json data
             json_data = {'status': 'error #specs_offline',
                          'message': 'Unable to retrieve hardware specifications for server ID [{}] because the server '
-                                    'is not responding to ping! Either it\'s broken or offline.'.format(server_id)}
+                                    'is not responding to ping!'.format(server_id)}
             
             # let webpanel know that the agent server can't be reached
             return jsonify(json_data)
@@ -553,7 +554,9 @@ def web_specs(server_id):
             # retrieve hardware specifications
             with urlopen('http://{}:{}/specs'.format(hostname, port)) as url:
                 r = json.loads(url.read().decode())
-                specs = Spec(r['hostname'], 
+                specs = Spec(server_type,
+                             'Enabled',
+                             r['hostname'],
                              r['ip'],
                              r['mac'],
                              r['os'],
@@ -561,18 +564,17 @@ def web_specs(server_id):
                              r['cpu_cores'],
                              r['ram'],
                              r['boot'],
-                             [r['load']['1min'], r['load']['5min'], r['load']['15min']])
+                             [r['load']['onemin'], r['load']['fivemin'], r['load']['fifteenmin']])
 
             # calculate server's availability
             cur.execute('''SELECT alive.num / total.num * 100.0 as available
-                        FROM ( SELECT COUNT(status) as num FROM {0}_ping WHERE status = 1  ) alive
-                        JOIN ( SELECT COUNT(status) as num FROM {0}_ping                   ) total;'''
-                        .format(db_prefix))
+                        FROM ( SELECT COUNT(status) as num FROM {0}_ping WHERE status = 1 AND server_id = {1} ) alive
+                        JOIN ( SELECT COUNT(status) as num FROM {0}_ping WHERE server_id = {1} ) total;'''
+                        .format(db_prefix, server_id))
             specs.set_availability(round(float(cur.fetchone()[0]), 1))
 
             # convert to json data
             json_data = {'status': 'good', 'data': specs.__dict__}
-            print(json_data)
 
             # print json data
             return jsonify(json_data)
@@ -592,6 +594,65 @@ def web_specs(server_id):
         
         # let webpanel know that there's an error on CM side
         json_data = {'status': 'error #graph_plain', 'message': 'Unable to process graph info for server ID [{}]! '
+                                                                'Please check logs.'.format(server_id)}
+        return jsonify(json_data)
+
+
+@app.route('/disks/<server_id>/')
+def web_disks(server_id):
+    try:
+        cur.execute('SELECT hostname, port FROM {}_server WHERE id={}'.format(db_prefix, server_id))
+        row = cur.fetchone()
+        hostname = row[0]
+        port = row[1]
+
+        # check if server is online & responding
+        ping_result = ping_server(hostname)
+        if ping_result is -1:
+            # create json data
+            json_data = {'status': 'error #specs_offline',
+                         'message': 'Unable to retrieve hardware specifications for server ID [{}] because the server '
+                                    'is not responding to ping!'.format(server_id)}
+
+            # let webpanel know that the agent server can't be reached
+            return jsonify(json_data)
+        else:
+            # retrieve hardware specifications
+            disks = list()
+            with urlopen('http://{}:{}/now'.format(hostname, port)) as url:
+                r = json.loads(url.read().decode())
+                for raw_disk in r['disks']:
+                    disks.append(Disk(raw_disk['name'],
+                                      raw_disk['percent'],
+                                      raw_disk['used'],
+                                      raw_disk['total']))
+
+            # convert to json data
+            json_data = {
+                'status': 'good',
+                'data': []
+            }
+            for disk in disks:
+                json_data['data'].append(disk.__dict__)
+
+            # print json data
+            return jsonify(json_data)
+
+    except pymysql.Error:
+        log('ERROR', 'CM', 'Unable to retrieve info for server ID [{}] from SQL database! STACKTRACE: \n{}'
+            .format(server_id, traceback.format_exc()))
+
+        # let webpanel know that there's an error on CM side
+        json_data = {'status': 'error #graph_sql', 'message': 'Unable to retrieve info for server ID [{}] from SQL '
+                                                              'database! Please check logs.'.format(server_id)}
+        return jsonify(json_data)
+
+    except Exception:
+        log('ERROR', 'CM', 'Unable to process disks info for server ID [{}]! STACKTRACE: \n{}'
+            .format(server_id, traceback.format_exc()))
+
+        # let webpanel know that there's an error on CM side
+        json_data = {'status': 'error #graph_plain', 'message': 'Unable to process disks info for server ID [{}]! '
                                                                 'Please check logs.'.format(server_id)}
         return jsonify(json_data)
 

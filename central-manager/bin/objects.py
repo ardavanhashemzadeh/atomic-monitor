@@ -71,7 +71,9 @@ class JSONServer:
 
 
 class Spec:
-    def __init__(self, _hostname, _ip, _mac, _os, _cpu_brand, _cpu_speed, _ram, _uptime, _load_list):
+    def __init__(self, _server_type, _mode, _hostname, _ip, _mac, _os, _cpu_brand, _cpu_speed, _ram, _uptime, _load):
+        self.server_type = _server_type
+        self.mode = _mode
         self.hostname = _hostname
         self.ip = _ip
         self.mac = _mac
@@ -80,11 +82,19 @@ class Spec:
         self.cpu_speed = _cpu_speed
         self.ram = _ram
         self.uptime = _uptime
-        self.load_list = _load_list
+        self.load = _load
         self.availability = -1
 
     def set_availability(self, _availability):
         self.availability = _availability
+
+
+class Disk:
+    def __init__(self, _name, _percent, _used, _total):
+        self.name = _name
+        self.percent = _percent
+        self.used = _used
+        self.total = _total
 
 
 class Graph:
