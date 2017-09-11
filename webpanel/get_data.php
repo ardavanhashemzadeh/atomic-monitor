@@ -15,6 +15,12 @@
 		else if($type == 'servers') {
 			echo file_get_contents($url);
 		}
+		else if($type == 'specs') {
+			echo file_get_contents($url);
+		}
+		else if($type == 'disks') {
+			echo file_get_contents($url);
+		}
 		else if($type == 'logs') {
 			$level = urlencode($_GET['level']);
 			$id = urlencode($_GET['id']);

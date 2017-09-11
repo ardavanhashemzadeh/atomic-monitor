@@ -39,11 +39,7 @@
 			<section id='graphs-menu'>
                 <h2 class='title'>UbuntuS-MAIN <span class='good'>Up</span></h2>
 				<div class='menu'>
-                    <select id='graph-server'>
-                        <option>UbuntuS-MAIN</option>
-                        <option>UbuntuS-DB</option>
-                        <option>UbuntuS-MM</option>
-                    </select>
+                    <select id='graph-server'></select>
                 </div>
 			</section>
 			<section id='graphs'>
@@ -112,77 +108,61 @@
                             </div>
                             <div id='disk-specs' class='content-table'> 
                                 <h3>Disks</h3>
-                                <table>
-                                    <tr>
-                                        <td class='device'>/</td>
-                                        <td class='size'>500 GB</td>
-                                        <td><div class='progress-bar'><span class='good' style='width: 33%'></span></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td class='device'>/var/www</td>
-                                        <td class='size'>20 GB</td>
-                                        <td><div class='progress-bar'><span class='bad' style='width: 96%'></span></div></td>
-                                    </tr>
-                                    <tr>
-                                        <td class='device'>/data-storage</td>
-                                        <td class='size'>1000 GB</td>
-                                        <td><div class='progress-bar'><span class='warn' style='width: 71%'></span></div></td>
-                                    </tr>
-                                </table>
+                                <table id='disks'></table>
                             </div>
                             <div id='system-specs' class='content-table'> 
                                 <h3>System Specifications</h3>
                                 <table>
                                     <tr>
                                         <td class='system-info'>Server Type</td>
-                                        <td class='info'>General</td>
+                                        <td id="specs-servertype" class='info'>General</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>Mode</td>
-                                        <td class='info'>Enabled</td>
+                                        <td id="specs-mode" class='info'>Enabled</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>Hostname</td>
-                                        <td class='info'>UbuntuS-MAIN</td>
+                                        <td id="specs-hostname" class='info'>UbuntuS-MAIN</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>IP</td>
-                                        <td class='info'>10.0.0.1</td>
+                                        <td id="specs-ip" class='info'>10.0.0.1</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>MAC</td>
-                                        <td class='info'>FF:FF:FF:FF:FF:FF</td>
+                                        <td id="specs-mac" class='info'>FF:FF:FF:FF:FF:FF</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>Availability</td>
-                                        <td class='info text-good'>98%</td>
+                                        <td id="specs-availability" class='info'>98%</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>OS</td>
-                                        <td class='info'>Ubuntu Server 17.04</td>
+                                        <td id="specs-os" class='info'>Ubuntu Server 17.04</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>CPU Brand</td>
-                                        <td class='info'>AMD FX 8200</td>
+                                        <td id="specs-cpubrand" class='info'>AMD FX 8200</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>CPU Speed</td>
-                                        <td class='info'>3 cores @ 3.9 GHz</td>
+                                        <td id="specs-cpuspeed" class='info'>3 cores @ 3.9 GHz</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>RAM</td>
-                                        <td class='info'>16GB</td>
+                                        <td id="specs-ram" class='info'>16GB</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>Uptime</td>
-                                        <td class='info'>4 days, 2:23:44</td>
+                                        <td id="specs-uptime" class='info'>4 days, 2:23:44</td>
                                     </tr>
                                     <tr>
                                         <td class='system-info'>Load</td>
                                         <td class='info'>
-                                            <span class='text-good'>0.08</span>
-                                            <span class='text-warn'>0.89</span>
-                                            <span class='text-bad'>0.95</span>
+                                            <span id="specs-load1m">0.08</span>
+                                            <span id="specs-load5m">0.89</span>
+                                            <span id="specs-load15m">0.95</span>
                                         </td>
                                     </tr>
                                 </table>

@@ -81,3 +81,44 @@ function get_icon(label) {
 	}
 	return type;
 }
+
+// get name based on label
+function get_type_name(label) {
+	var type = '';
+	switch(label) {
+		case 'GN':
+			type = 'General Server';
+			break;
+		case 'DB':
+			type = 'Database Server';
+			break;
+		case 'EM':
+			type = 'Email Server';
+			break;
+		case 'WB':
+			type = 'Website Server';
+			break;
+		case 'FW':
+			type = 'Firewall';
+			break;
+		case 'AD':
+			type = 'Active Directory Server';
+			break;
+		case 'VM':
+			type = 'Hypervisor Server';
+			break;
+		case 'FS':
+			type = 'File Share Server';
+			break;
+		case 'SY':
+			type = 'Security Server';
+			break;
+		case 'MN':
+			type = 'Monitoring Server';
+			break;
+		default:
+			type = 'Unknown Server';
+			break;
+	}
+	return type;
+}
