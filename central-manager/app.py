@@ -175,7 +175,7 @@ def scrape_data(_cur, _con, time_interval):
 def scrape_data_server(_cur, server):
     try:
         ping_result = ping_server(server.get_host())
-        if ping_result is not -1:
+        if ping_result is not -1 and server.get_mode() is not 2:
             try:
                 # sniff up data from a server
                 with urlopen('http://{}:{}/all'.format(server.get_host(), server.get_port())) as url:
